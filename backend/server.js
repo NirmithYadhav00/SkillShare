@@ -4,6 +4,7 @@ const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
 const Message = require("./models/Message");
+const messageRoutes = require("./routes/messageRoutes");
 require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");
@@ -25,7 +26,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-
+app.use("/api/messages", messageRoutes);
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI)
 .then(() => {
@@ -39,29 +40,26 @@ io.on("connection", (socket) => {
 
   console.log("User connected:", socket.id);
 
-  // join chat room
   socket.on("join_room", (room) => {
     socket.join(room);
+    console.log("User joined room:", room);
   });
 
-  // send message
- socket.on("send_message", async (data) => {
+  socket.on("send_message", async (data) => {
 
-  const newMessage = new Message({
-    sender: data.sender,
-    receiver: data.receiver,
-    text: data.text,
-    room: data.room
-  });
+    console.log("Message sent to room:", data.room);
 
-  await newMessage.save();
+    const newMessage = new Message({
+      sender: data.sender,
+      receiver: data.receiver,
+      text: data.text,
+      room: data.room
+    });
 
-  io.to(data.room).emit("receive_message", data);
+    await newMessage.save();
 
-});
+    io.to(data.room).emit("receive_message", data);
 
-  socket.on("disconnect", () => {
-    console.log("User disconnected");
   });
 
 });
