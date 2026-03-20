@@ -1,14 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const Message = require("../models/Message");
 
-router.get("/:room", async (req, res) => {
-  try {
-    const messages = await Message.find({ room: req.params.room });
-    res.json(messages);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+const {
+  getMessages,
+  sendMessage,
+} = require("../controllers/messageControllers");
+
+// GET messages by room (your existing logic moved to controller)
+router.get("/:room", getMessages);
+
+// OPTIONAL: send message via API (not required but useful)
+router.post("/", sendMessage);
 
 module.exports = router;
