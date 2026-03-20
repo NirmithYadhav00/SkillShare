@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { socket } from "./pages/socket";
-
+import Landing from "./pages/Landing";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -43,7 +43,8 @@ function App() {
     <Router>
       <Routes>
 
-        <Route path="/" element={<Signup />} />
+        <Route path="/Signup" element={<Signup />} />
+        <Route path="/landing" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/chat/:id" element={<Chat />} />
