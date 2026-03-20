@@ -168,7 +168,7 @@ function Login() {
 
         {/* Nav actions */}
         <div style={{ display: "flex", gap: 10 }}>
-          <Link to="/" style={{
+          <Link to="/Signup" style={{
             padding: "8px 20px", borderRadius: 10,
             fontWeight: 600, fontSize: "0.9rem", color: C.muted,
             border: `1.5px solid ${C.border}`,
@@ -275,7 +275,7 @@ function Login() {
           {/* Footer link */}
           <p style={{ textAlign: "center", marginTop: 24, fontSize: "0.88rem", color: C.muted, fontWeight: 500 }}>
             Don't have an account?{" "}
-            <Link to="/" style={{ color: C.a1, fontWeight: 700, textDecoration: "none" }}>
+            <Link to="/Signup" style={{ color: C.a1, fontWeight: 700, textDecoration: "none" }}>
               Sign Up
             </Link>
           </p>
