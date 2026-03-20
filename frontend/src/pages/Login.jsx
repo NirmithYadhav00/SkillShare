@@ -1,48 +1,56 @@
 import { useState } from "react";
-import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 
 function Login() {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const handleLogin = async (e) => {
-    e.preventDefault();
 
-    console.log("Login clicked", email, password);
+  const handleLogin = async (e) => {
+    e.preventDefault(); // 🔥 VERY IMPORTANT
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        {
-          email,
-          password
-        }
-      );
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
 
-    localStorage.setItem("token", res.data.token);
+      const data = await res.json();
 
-    alert("Login successful");
-    navigate("/dashboard");
-    } catch (error) {
-      // clear any previous token just in case
-      localStorage.removeItem("token");
+      console.log("LOGIN RESPONSE:", data);
 
-      console.log(error);
-      alert(error.response?.data?.message || "Login failed");
+      // ✅ SAFE userId extraction
+      const userId =
+        data.user?._id || data._id || data.userId;
 
+      if (!userId) {
+        console.log("❌ userId not found in response");
+        return;
+      }
+
+      // ✅ SAVE to localStorage
+      localStorage.setItem("userId", userId);
+      localStorage.setItem("token", data.token);
+
+      console.log("✅ Saved userId:", userId);
+
+      // ✅ Navigate AFTER saving
+      navigate("/dashboard");
+
+    } catch (err) {
+      console.error("Login error:", err);
     }
   };
 
   return (
     <div style={{ textAlign: "center", marginTop: "100px" }}>
-
       <h1>SkillShare</h1>
       <h2>Login</h2>
 
       <form onSubmit={handleLogin}>
-
         <input
           type="email"
           placeholder="Email"
@@ -62,13 +70,11 @@ function Login() {
         <br /><br />
 
         <button type="submit">Login</button>
-
       </form>
 
       <p>
         Don't have an account? <Link to="/">Signup</Link>
       </p>
-
     </div>
   );
 }
