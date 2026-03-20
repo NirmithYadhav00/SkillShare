@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
+import { socket } from "./socket";
 
 function Dashboard() {
 
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
-
+  const [onlineUsers, setOnlineUsers] = useState([]);
   useEffect(() => {
 
     const token = localStorage.getItem("token");
@@ -36,6 +37,16 @@ function Dashboard() {
     navigate("/login");
   };
 
+  useEffect(() => {
+  socket.on("online-users", (users) => {
+    console.log("🟢 Online users:", users);
+    setOnlineUsers(users);
+  });
+
+  return () => {
+    socket.off("online-users");
+  };
+}, []);
   return (
 
     <div style={{ textAlign: "center", marginTop: "50px" }}>
@@ -57,7 +68,17 @@ function Dashboard() {
           width: "250px",
         }}
       />
+      {users.map((user) => (
+  <div key={user._id}>
+    {user.name}
 
+    {onlineUsers.includes(user._id) ? (
+      <span style={{ color: "green" }}> 🟢</span>
+    ) : (
+      <span style={{ color: "gray" }}> ⚫</span>
+    )}
+  </div>
+))}
       <h2>Available Teachers</h2>
 
       <Navbar />
