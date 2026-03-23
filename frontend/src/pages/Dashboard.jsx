@@ -195,12 +195,14 @@ function Dashboard() {
 
   // fetch users + auth guard
   useEffect(() => {
+    
     const token = localStorage.getItem("token");
     if (!token) { navigate("/login"); return; }
 
     const fetchUsers = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/users");
+        const userId = localStorage.getItem("userId");
+        const res = await axios.get(`http://localhost:5000/api/users/${userId}`);
         setUsers(res.data);
       } catch (error) {
         console.log(error);
