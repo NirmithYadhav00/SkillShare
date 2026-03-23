@@ -5,6 +5,8 @@ const { getProfile, updateProfile, getAllUsers } = require("../controllers/userC
 
 router.get("/profile/:id", getProfile);
 router.get("/", getAllUsers);
+router.get("/profile/:id", getProfile);
+router.get("/:id", getAllUsers);
 
 router.put("/profile/:id", updateProfile);
 
