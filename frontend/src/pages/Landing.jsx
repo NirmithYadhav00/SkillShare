@@ -1,643 +1,307 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-// ─── COLORS ───────────────────────────────────────────────────────────────────
-const C = {
-  bg:      "#0d0f14",
-  surface: "#161920",
-  s2:      "#1c2028",
-  s3:      "#222731",
-  a1:      "#00d4aa",
-  a2:      "#00b8d9",
-  text:    "#eef0f6",
-  muted:   "#8b92a8",
-  dim:     "#555d74",
-  border:  "rgba(255,255,255,0.07)",
-  bAccent: "rgba(0,212,170,0.18)",
-};
+const CATEGORIES = ["All", "Development", "Design", "Data Science", "Business", "AI & ML", "Photography"];
 
-// ─── GLOBAL CSS (animations + hover states) ───────────────────────────────────
-const GLOBAL_CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@800;900&family=Satoshi:wght@400;500;600;700&display=swap');
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html, body, #root {
-    width: 100%;
-    min-height: 100vh;
-    scroll-behavior: smooth;
-  }
-
-  body {
-    font-family: 'Satoshi', sans-serif;
-    background: ${C.bg};
-    color: ${C.text};
-    overflow-x: hidden;
-  }
-
-  /* subtle grid overlay */
-  body::after {
-    content: '';
-    position: fixed; inset: 0;
-    pointer-events: none; z-index: 0;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
-    background-size: 48px 48px;
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(22px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0   rgba(0,212,170,0.6); }
-    50%       { box-shadow: 0 0 0 6px rgba(0,212,170,0);   }
-  }
-  @keyframes drift1 {
-    from { transform: translate(0, 0); }
-    to   { transform: translate(28px, 18px); }
-  }
-  @keyframes drift2 {
-    from { transform: translate(0, 0); }
-    to   { transform: translate(-18px, 22px); }
-  }
-
-  .grad {
-    background: linear-gradient(135deg, ${C.a1} 0%, #4eecd4 40%, ${C.a2} 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .card:hover       { transform: translateY(-5px) !important; }
-  .btn-p:hover      { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(0,212,170,0.5) !important; }
-  .btn-g:hover      { color: ${C.a1}; border-color: ${C.bAccent}; background: rgba(0,212,170,0.06); }
-  .footer-link:hover { color: ${C.a1}; }
-`;
-
-// ─── DATA ─────────────────────────────────────────────────────────────────────
-
-const CHAT_USERS = [
-  { initials: "AM", grad: "linear-gradient(135deg,#00d4aa,#00b8d9)", name: "Alex M.",  lastMsg: "Great idea! Let's try it.", online: true  },
-  { initials: "SR", grad: "linear-gradient(135deg,#f472b6,#fb923c)", name: "Sara R.",  lastMsg: "Sent you the doc 📎",        online: true  },
-  { initials: "JK", grad: "linear-gradient(135deg,#34d399,#22d3ee)", name: "James K.", lastMsg: "How does it work?",           online: false },
-  { initials: "PL", grad: "linear-gradient(135deg,#fbbf24,#f87171)", name: "Priya L.", lastMsg: "Thanks for sharing!",         online: true  },
-];
-
-const CHAT_MESSAGES = [
-  { mine: false, text: "Hey! Have you tried the new knowledge sharing feature?" },
-  { mine: true,  text: "Yes! It's super smooth. Love how it works 🚀"           },
-  { mine: false, text: "Agreed — the real-time sync is instant!"                },
-  { mine: true,  text: "Let's set up a session with the whole team 💡"          },
+const COURSES = [
+  // { emoji: "⚛️", title: "React for Beginners", instructor: "Sarah Chen", rating: 4.8, students: "12.4k", duration: "48h", tag: "Development", tagColor: "#6366f1", level: "Beginner" },
+  // { emoji: "🎨", title: "UI/UX Design Masterclass", instructor: "Marcus Rivera", rating: 4.7, students: "8.9k", duration: "36h", tag: "Design", tagColor: "#f59e0b", level: "Intermediate" },
+  // { emoji: "📊", title: "Data Science Bootcamp", instructor: "James Lee", rating: 4.9, students: "15.2k", duration: "60h", tag: "Data Science", tagColor: "#10b981", level: "Advanced" },
+  // { emoji: "🤖", title: "AI & Machine Learning", instructor: "Dr. Anika Sharma", rating: 4.9, students: "20.1k", duration: "72h", tag: "AI & ML", tagColor: "#f43f5e", level: "Advanced" },
 ];
 
 const FEATURES = [
-  { icon: "⚡", title: "Real-Time Messaging",  desc: "Instant delivery with zero lag. See replies appear live with typing indicators."      },
-  { icon: "🟢", title: "Online Presence",       desc: "Always know who's available. Live status lets you reach the right people instantly."  },
-  { icon: "✨", title: "Intuitive Interface",   desc: "Clean, distraction-free UI designed so you focus on ideas, not the app."              },
-  { icon: "🔒", title: "Secure Conversations",  desc: "All messages encrypted in transit. Your conversations are private and protected."     },
+  // { icon: "🎯", title: "Live Interactive Classes", desc: "Join real-time sessions. Ask questions and get instant feedback from instructors." },
+  // { icon: "💬", title: "Real-Time Messaging", desc: "Chat with mentors and peers instantly. Study groups and doubt clearing in one place." },
+  // { icon: "📜", title: "Verified Certificates", desc: "Industry-recognized certificates upon completion. Showcase skills to top employers." },
+  // { icon: "🧠", title: "AI-Powered Learning Path", desc: "Personalized curriculum adapting to your pace, strengths, and career goals." },
+  // { icon: "📱", title: "Learn Anywhere", desc: "Access all content on any device. Download lessons for offline learning." },
+  // { icon: "🌐", title: "Global Community", desc: "Join 2M+ learners across 150+ countries. Network and grow together." },
 ];
 
-const STEPS = [
-  { num: "1", title: "Create your account",      desc: "Sign up in seconds with just your email. No credit card, no friction."              },
-  { num: "2", title: "Find & connect",           desc: "Browse users, explore skills, connect with people who share your interests."        },
-  { num: "3", title: "Start chatting instantly", desc: "Jump into real-time conversations. Share knowledge and build connections."           },
+const MENTORS = [
+  // { name: "Sarah Chen", role: "Full-Stack Engineer", avatar: "SC", color: "#6366f1", courses: 12 },
+  // { name: "Marcus Rivera", role: "Lead UX Designer", avatar: "MR", color: "#f59e0b", courses: 8 },
+  // { name: "Dr. Anika Sharma", role: "ML Researcher", avatar: "AS", color: "#10b981", courses: 15 },
+  // { name: "James Lee", role: "Data Scientist", avatar: "JL", color: "#f43f5e", courses: 10 },
 ];
 
-const CTA_AVATARS = [
-  ["AM", "linear-gradient(135deg,#00d4aa,#00b8d9)"],
-  ["SR", "linear-gradient(135deg,#f472b6,#fb923c)"],
-  ["JK", "linear-gradient(135deg,#34d399,#22d3ee)"],
-  ["PL", "linear-gradient(135deg,#fbbf24,#f87171)"],
-  ["+",  "linear-gradient(135deg,#7c6dfa,#a78bfa)"],
+const STATS = [
+  // { value: "50K+", label: "Online Courses" },
+  // { value: "2M+", label: "Active Learners" },
+  // { value: "500+", label: "Expert Mentors" },
+  // { value: "98%", label: "Satisfaction" },
 ];
 
-// ─── SMALL REUSABLE COMPONENTS (defined OUTSIDE main component) ───────────────
-
-function Avatar({ initials, grad, size = 32 }) {
+function Stars({ r }) {
   return (
-    <div style={{
-      width: size, height: size, borderRadius: "50%",
-      background: grad,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: size * 0.22, fontWeight: 700, color: "#fff",
-      flexShrink: 0,
-    }}>
-      {initials}
-    </div>
-  );
-}
-
-function Logo({ size = 34 }) {
-  return (
-    <a href="/" style={{
-      display: "flex", alignItems: "center", gap: 10,
-      fontFamily: "'Cabinet Grotesk', sans-serif",
-      fontWeight: 800, fontSize: "1.3rem",
-      color: C.text, textDecoration: "none", letterSpacing: "-0.02em",
-    }}>
-      <div style={{
-        width: size, height: size, borderRadius: 9,
-        background: `linear-gradient(135deg, ${C.a1}, ${C.a2})`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        boxShadow: "0 0 18px rgba(0,212,170,0.35)",
-      }}>
-        <svg width={size * 0.53} height={size * 0.53} viewBox="0 0 24 24" fill="none">
-          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="#0a0c10" />
-        </svg>
-      </div>
-      Skill Share
-    </a>
-  );
-}
-
-function SectionLabel({ children }) {
-  return (
-    <span style={{
-      display: "block", marginBottom: 14,
-      fontSize: "0.75rem", fontWeight: 700,
-      letterSpacing: "0.1em", textTransform: "uppercase",
-      color: C.a1,
-    }}>
-      {children}
+    <span style={{ fontSize: "12px", color: "#f59e0b" }}>
+      {"★".repeat(Math.floor(r))}<span style={{ color: "#d1d5db" }}>{"★".repeat(5 - Math.floor(r))}</span>
+      <span style={{ color: "#6b7280", marginLeft: "4px" }}>{r}</span>
     </span>
   );
 }
 
-function SectionHeading({ children }) {
-  return (
-    <h2 style={{
-      fontFamily: "'Cabinet Grotesk', sans-serif",
-      fontWeight: 800, fontSize: "clamp(2rem, 4vw, 2.9rem)",
-      letterSpacing: "-0.03em", lineHeight: 1.15,
-      color: C.text, marginBottom: 14,
-    }}>
-      {children}
-    </h2>
-  );
-}
+export default function App() {
+  const [cat, setCat] = useState("All");
+  const [hovered, setHovered] = useState(null);
+  const [msg, setMsg] = useState("");
+  const [msgs, setMsgs] = useState([
+    // { u: "Alex K.", a: "AK", c: "#6366f1", t: "Just finished the React module 🚀", time: "2m ago" },
+    // { u: "Mentor · Sarah", a: "SC", c: "#10b981", t: "Great work! Keep going 💪", time: "3m ago", mentor: true },
+    // { u: "Priya M.", a: "PM", c: "#f59e0b", t: "Can someone explain async/await?", time: "5m ago" },
+  ]);
 
-function SectionSub({ children }) {
-  return (
-    <p style={{
-      fontSize: "1.05rem", color: C.muted,
-      maxWidth: 500, fontWeight: 500, lineHeight: 1.6, marginBottom: 56,
-    }}>
-      {children}
-    </p>
-  );
-}
-
-// ─── PAGE SECTIONS (defined OUTSIDE main component) ───────────────────────────
-
-function Navbar({ scrolled }) {
-  return (
-    <nav style={{
-      position: "sticky", top: 0, zIndex: 100,
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: "0 5%", height: 68,
-      background: "rgba(13,15,20,0.88)",
-      backdropFilter: "blur(22px)",
-      borderBottom: `1px solid ${scrolled ? C.bAccent : C.border}`,
-      boxShadow: scrolled ? "0 4px 30px rgba(0,0,0,0.6)" : "none",
-      transition: "all 0.3s",
-    }}>
-      <Logo />
-      <div style={{ display: "flex", gap: 10 }}>
-        <a href="/login" className="btn-g" style={{
-          padding: "8px 20px", borderRadius: 10,
-          fontWeight: 600, fontSize: "0.9rem", color: C.muted,
-          border: `1.5px solid ${C.border}`,
-          textDecoration: "none", transition: "all 0.2s",
-        }}>
-          Login
-        </a>
-        <a href="/Signup" className="btn-p" style={{
-          padding: "9px 22px", borderRadius: 10,
-          fontWeight: 700, fontSize: "0.9rem", color: "#0a0c10",
-          background: `linear-gradient(135deg, ${C.a1}, ${C.a2})`,
-          textDecoration: "none",
-          boxShadow: "0 4px 18px rgba(0,212,170,0.3)",
-          transition: "all 0.2s",
-        }}>
-          Sign Up
-        </a>
-      </div>
-    </nav>
-  );
-}
-
-function HeroSection() {
-  const blobs = [
-    { w: 560, h: 560, color: "rgba(0,212,170,0.14)",   top: -120, left: -100,   anim: "drift1 13s ease-in-out infinite alternate"         },
-    { w: 440, h: 440, color: "rgba(0,184,217,0.12)",   top: 20,   right: -80,   anim: "drift2 15s ease-in-out infinite alternate"         },
-    { w: 320, h: 320, color: "rgba(124,109,250,0.15)", bottom: 40, left: "38%", anim: "drift1 11s ease-in-out infinite alternate-reverse" },
-  ];
+  const send = () => {
+    if (!msg.trim()) return;
+    setMsgs(p => [...p, { u: "You", a: "YO", c: "#6366f1", t: msg, time: "now" }]);
+    setMsg("");
+  };
 
   return (
-    <section style={{
-      position: "relative", zIndex: 1,
-      display: "flex", flexDirection: "column", alignItems: "center",
-      textAlign: "center",
-      padding: "110px 5% 90px",
-      overflow: "hidden",
-    }}>
-      {/* Glow blobs */}
-      {blobs.map((b, i) => (
-        <div key={i} style={{
-          position: "absolute", borderRadius: "50%",
-          filter: "blur(100px)", pointerEvents: "none",
-          width: b.w, height: b.h,
-          background: `radial-gradient(circle, ${b.color}, transparent 70%)`,
-          top: b.top, left: b.left, right: b.right, bottom: b.bottom,
-          animation: b.anim,
-        }} />
-      ))}
+    <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", background: "#fff", color: "#111827", width: "100%", minHeight: "100vh", overflowX: "hidden" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body, #root { width: 100%; min-height: 100vh; overflow-x: hidden; }
+        input::placeholder { color: #9ca3af; }
+        a { text-decoration: none; }
+        button { font-family: inherit; cursor: pointer; }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .nav-inner, .section-inner {
+          max-width: 1200px;
+          width: 100%;
+          margin: 0 auto;
+          padding: 0 32px;
+        }
+        @media (max-width: 768px) {
+          .nav-inner, .section-inner { padding: 0 16px; }
+        }
+      `}</style>
 
-      {/* Live badge */}
-      <div style={{
-        position: "relative", zIndex: 1,
-        display: "inline-flex", alignItems: "center", gap: 7,
-        padding: "5px 16px 5px 9px",
-        background: "rgba(0,212,170,0.08)",
-        border: "1px solid rgba(0,212,170,0.25)",
-        borderRadius: 999, fontSize: "0.78rem", fontWeight: 600, color: C.a1,
-        marginBottom: 28, animation: "fadeUp 0.6s ease both",
-      }}>
-        <span style={{ width: 7, height: 7, borderRadius: "50%", background: C.a1, animation: "pulse 2s ease infinite" }} />
-        Now live — real-time messaging for everyone
-      </div>
-
-      {/* Headline */}
-      <h1 style={{
-        position: "relative", zIndex: 1,
-        fontFamily: "'Cabinet Grotesk', sans-serif",
-        fontWeight: 900, fontSize: "clamp(3rem, 7vw, 5.4rem)",
-        letterSpacing: "-0.04em", lineHeight: 1.05,
-        color: C.text, marginBottom: 22,
-        animation: "fadeUp 0.7s 0.1s ease both",
-      }}>
-        Connect. Learn. <span className="grad">Share.</span>
-      </h1>
-
-      {/* Subtitle */}
-      <p style={{
-        position: "relative", zIndex: 1,
-        fontSize: "clamp(1rem, 2vw, 1.2rem)", color: C.muted,
-        maxWidth: 520, marginBottom: 42, fontWeight: 500, lineHeight: 1.65,
-        animation: "fadeUp 0.7s 0.2s ease both",
-      }}>
-        Chat in real-time, exchange ideas, and grow together — all in one beautifully simple platform.
-      </p>
-
-      {/* CTA buttons */}
-      <div style={{
-        position: "relative", zIndex: 1,
-        display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center",
-        animation: "fadeUp 0.7s 0.3s ease both",
-      }}>
-        <a href="/Signup" className="btn-p" style={{
-          padding: "14px 32px", borderRadius: 14,
-          fontWeight: 700, fontSize: "1rem", color: "#0a0c10",
-          background: `linear-gradient(135deg, ${C.a1}, ${C.a2})`,
-          textDecoration: "none",
-          boxShadow: "0 6px 28px rgba(0,212,170,0.38)",
-          transition: "all 0.22s",
-          display: "inline-flex", alignItems: "center", gap: 8,
-        }}>
-          Get Started Free
-          <svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </a>
-        <a href="/login" className="btn-g" style={{
-          padding: "13px 28px", borderRadius: 14,
-          fontWeight: 600, fontSize: "1rem", color: C.muted,
-          background: C.surface, border: `1.5px solid ${C.border}`,
-          textDecoration: "none", transition: "all 0.22s",
-        }}>
-          Sign In
-        </a>
-      </div>
-
-      {/* Chat mockup */}
-      <div style={{
-        position: "relative", zIndex: 1,
-        marginTop: 68, width: "100%", maxWidth: 800,
-        animation: "fadeUp 0.8s 0.4s ease both",
-      }}>
-        <div style={{
-          background: C.surface, borderRadius: 22,
-          border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow: "0 24px 64px rgba(0,0,0,0.6), 0 0 80px rgba(0,212,170,0.05)",
-          overflow: "hidden",
-        }}>
-          {/* Window bar */}
-          <div style={{
-            display: "flex", alignItems: "center", gap: 7,
-            padding: "14px 18px", borderBottom: `1px solid ${C.border}`,
-            background: "#111318",
-          }}>
-            {["#ff5f57", "#febc2e", "#27c93f"].map(color => (
-              <span key={color} style={{ width: 11, height: 11, borderRadius: "50%", background: color }} />
+      {/* NAV */}
+      <nav style={{ position: "sticky", top: 0, zIndex: 99, background: "#fff", borderBottom: "1px solid #e5e7eb", height: "60px", display: "flex", alignItems: "center", width: "100%" }}>
+        <div className="nav-inner" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ background: "#4f46e5", color: "#fff", width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 16 }}>B</span>
+            <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: "-0.5px" }}>Brain<span style={{ color: "#4f46e5" }}>Link</span></span>
+          </div>
+          <div style={{ display: "flex", gap: "6px", background: "#f3f4f6", padding: "5px", borderRadius: "10px" }}>
+            {["Courses", "Live Classes", "Mentors", "Community"].map(n => (
+              <a key={n} href="#" style={{ padding: "6px 14px", borderRadius: "7px", fontSize: 13, fontWeight: 600, color: "#374151", background: "transparent" }}>{n}</a>
             ))}
-            <span style={{ marginLeft: 8, fontSize: "0.8rem", fontWeight: 600, color: C.dim }}>
-              Skill Share — Conversations
-            </span>
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button style={{ padding: "8px 18px", border: "1.5px solid #4f46e5", background: "#fff", color: "#4f46e5", borderRadius: 8, fontWeight: 700, fontSize: 13 }}>Sign In</button>
+            <button style={{ padding: "8px 18px", background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13 }}>Get Started</button>
+          </div>
+        </div>
+      </nav>
+
+      {/* HERO */}
+      <section style={{ background: "linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #fff 100%)", width: "100%" }}>
+        <div className="section-inner" style={{ padding: "80px 32px", display: "flex", alignItems: "center", gap: 64, flexWrap: "wrap" }}>
+          <div style={{ flex: "1 1 400px" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#ede9fe", color: "#4f46e5", padding: "6px 14px", borderRadius: 100, fontSize: 12, fontWeight: 700, marginBottom: 24, letterSpacing: "0.5px" }}>
+              <span style={{ width: 6, height: 6, background: "#4f46e5", borderRadius: "50%", animation: "float 1.5s ease-in-out infinite" }} />
+              LIVE CLASSES AVAILABLE NOW
+            </div>
+            <h1 style={{ fontSize: "clamp(38px, 5vw, 60px)", fontWeight: 900, lineHeight: 1.08, letterSpacing: "-2px", marginBottom: 18 }}>
+              Learn Skills That<br /><span style={{ color: "#4f46e5" }}>Actually Matter</span>
+            </h1>
+            <p style={{ fontSize: 17, color: "#6b7280", lineHeight: 1.75, marginBottom: 32, maxWidth: 460 }}>
+              Where ideas move fast and skills flow freely 
+              <br />welcome to Brain Link. The ultimate platform for learning and growth.
+            </p>
+            <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
+              <button style={{ padding: "13px 28px", background: "#4f46e5", color: "#fff", border: "none", borderRadius: 10, fontWeight: 700, fontSize: 15 }}>Explore Courses →</button>
+              <button style={{ padding: "13px 28px", background: "#fff", border: "1.5px solid #e5e7eb", color: "#374151", borderRadius: 10, fontWeight: 600, fontSize: 15 }}>▶ Watch Demo</button>
+            </div>
+            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+              {STATS.map((s, i) => (
+                <div key={i}>
+                  <div style={{ fontWeight: 900, fontSize: 22, color: "#4f46e5" }}>{s.value}</div>
+                  <div style={{ fontSize: 12, color: "#9ca3af" }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Sidebar + Chat */}
-          <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", height: 360 }}>
-
-            {/* Sidebar */}
-            <div style={{
-              borderRight: `1px solid ${C.border}`,
-              padding: "16px 12px",
-              background: "rgba(13,15,20,0.6)",
-              display: "flex", flexDirection: "column", gap: 4,
-            }}>
-              <div style={{ fontSize: "0.68rem", fontWeight: 700, color: C.dim, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 8px 8px" }}>
-                Recent Chats
+          <div style={{ flex: "1 1 300px", position: "relative", display: "flex", justifyContent: "center" }}>
+            <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 16, padding: 24, width: 300, boxShadow: "0 20px 60px rgba(79,70,229,0.12)" }}>
+              <div style={{ background: "linear-gradient(135deg, #ede9fe, #ddd6fe)", borderRadius: 12, padding: "24px", fontSize: 48, textAlign: "center", marginBottom: 14 }}>⚛️</div>
+              {/* <div style={{ fontSize: 11, color: "#4f46e5", fontWeight: 700, marginBottom: 4 }}>Google Career Certificates</div>
+              <div style={{ fontWeight: 800, fontSize: 15, marginBottom: 10, lineHeight: 1.3 }}>Full-Stack Web Development Bootcamp</div> */}
+              <Stars r={4.9} />
+              <div style={{ display: "flex", gap: 12, fontSize: 12, color: "#6b7280", margin: "10px 0 14px" }}>
+                <span>⏱ 48h</span><span>👥 12.4k</span>
               </div>
-              {CHAT_USERS.map((user, i) => (
-                <div key={user.initials} style={{
-                  display: "flex", alignItems: "center", gap: 9,
-                  padding: "8px 10px", borderRadius: 10, cursor: "pointer",
-                  background: i === 0 ? "rgba(0,212,170,0.1)" : "transparent",
-                }}>
-                  <div style={{ position: "relative" }}>
-                    <Avatar initials={user.initials} grad={user.grad} size={32} />
-                    {user.online && (
-                      <span style={{
-                        position: "absolute", bottom: 1, right: 1,
-                        width: 8, height: 8, borderRadius: "50%",
-                        background: "#22c55e", border: `2px solid ${C.surface}`,
-                        boxShadow: "0 0 6px #22c55e",
-                      }} />
-                    )}
+              <button style={{ width: "100%", padding: 11, background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13 }}>Enroll Free →</button>
+            </div>
+            <div style={{ position: "absolute", top: -12, left: -20, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: "10px 14px", display: "flex", gap: 8, alignItems: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", animation: "float 4s ease-in-out infinite", fontSize: 12 }}>
+              🎓 <div><div style={{ fontWeight: 700 }}>Certificate Earned</div><div style={{ color: "#9ca3af" }}>by 2M+ learners</div></div>
+            </div>
+            <div style={{ position: "absolute", bottom: 10, right: -16, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: "10px 14px", display: "flex", gap: 8, alignItems: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", animation: "float 4s ease-in-out infinite 2s", fontSize: 12 }}>
+              ⭐ <div><div style={{ fontWeight: 700 }}>4.9 / 5 Rating</div><div style={{ color: "#9ca3af" }}>Avg across courses</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* COURSES */}
+      <section style={{ width: "100%" }}>
+        <div className="section-inner" style={{ padding: "72px 32px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32, flexWrap: "wrap", gap: 12 }}>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#4f46e5", letterSpacing: "2px", marginBottom: 6 }}>FEATURED COURSES</p>
+              <h2 style={{ fontSize: "clamp(22px,3vw,32px)", fontWeight: 900, letterSpacing: "-0.5px" }}>Top Picks This Week</h2>
+            </div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {CATEGORIES.map(c => (
+                <button key={c} onClick={() => setCat(c)} style={{ padding: "7px 16px", borderRadius: 100, border: "1.5px solid", borderColor: cat === c ? "#4f46e5" : "#e5e7eb", background: cat === c ? "#4f46e5" : "#fff", color: cat === c ? "#fff" : "#6b7280", fontWeight: 600, fontSize: 13 }}>{c}</button>
+              ))}
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
+            {COURSES.map((c, i) => (
+              <div key={i} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}
+                style={{ border: "1px solid #e5e7eb", borderRadius: 14, overflow: "hidden", transition: "all 0.25s", transform: hovered === i ? "translateY(-6px)" : "none", boxShadow: hovered === i ? "0 16px 48px rgba(79,70,229,0.12)" : "0 2px 8px rgba(0,0,0,0.05)", background: "#fff" }}>
+                <div style={{ background: "linear-gradient(135deg, #ede9fe, #faf5ff)", padding: 28, fontSize: 48, textAlign: "center" }}>{c.emoji}</div>
+                <div style={{ padding: 20 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                    <span style={{ background: c.tagColor + "22", color: c.tagColor, fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100 }}>{c.tag}</span>
+                    <span style={{ fontSize: 11, background: "#f3f4f6", color: "#6b7280", padding: "3px 10px", borderRadius: 100 }}>{c.level}</span>
                   </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: "0.78rem", fontWeight: 600, color: C.text }}>{user.name}</div>
-                    <div style={{ fontSize: "0.7rem", color: C.dim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {user.lastMsg}
+                  <h3 style={{ fontWeight: 800, fontSize: 15, marginBottom: 6, lineHeight: 1.35 }}>{c.title}</h3>
+                  <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 8 }}>by {c.instructor}</p>
+                  <Stars r={c.rating} />
+                  <div style={{ display: "flex", gap: 12, fontSize: 12, color: "#9ca3af", margin: "10px 0 14px" }}>
+                    <span>👥 {c.students}</span><span>⏱ {c.duration}</span>
+                  </div>
+                  <button style={{ width: "100%", padding: 10, background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13 }}>Enroll Now</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section style={{ background: "#f9fafb", width: "100%" }}>
+        <div className="section-inner" style={{ padding: "72px 32px" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#4f46e5", letterSpacing: "2px", marginBottom: 8, textAlign: "center" }}>PLATFORM</p>
+          <h2 style={{ fontSize: "clamp(22px,3vw,32px)", fontWeight: 900, textAlign: "center", marginBottom: 8, letterSpacing: "-0.5px" }}>Everything You Need to Grow</h2>
+          <p style={{ fontSize: 16, color: "#6b7280", textAlign: "center", marginBottom: 48 }}>Built for serious learners. Designed for real results.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
+            {FEATURES.map((f, i) => (
+              <div key={i} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 14, padding: 28 }}>
+                <div style={{ fontSize: 32, marginBottom: 14 }}>{f.icon}</div>
+                <h3 style={{ fontWeight: 800, fontSize: 16, marginBottom: 8 }}>{f.title}</h3>
+                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.7 }}>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* LIVE CHAT */}
+      <section style={{ width: "100%" }}>
+        <div className="section-inner" style={{ padding: "72px 32px" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#4f46e5", letterSpacing: "2px", marginBottom: 8, textAlign: "center" }}>COMMUNITY</p>
+          <h2 style={{ fontSize: "clamp(22px,3vw,32px)", fontWeight: 900, textAlign: "center", marginBottom: 8, letterSpacing: "-0.5px" }}>Real-Time Classroom Chat</h2>
+          <p style={{ fontSize: 16, color: "#6b7280", textAlign: "center", marginBottom: 40 }}>Ask questions, share insights, and learn together — live.</p>
+          <div style={{ maxWidth: 640, margin: "0 auto", border: "1px solid #e5e7eb", borderRadius: 16, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
+            <div style={{ padding: "14px 20px", background: "#f9fafb", borderBottom: "1px solid #e5e7eb", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ width: 8, height: 8, background: "#10b981", borderRadius: "50%", display: "inline-block" }} />
+                <span style={{ fontWeight: 700, fontSize: 14 }}>Live Session — React Bootcamp</span>
+              </div>
+              <span style={{ fontSize: 12, color: "#6b7280" }}>🟢 284 online</span>
+            </div>
+            <div style={{ padding: "16px 20px", maxHeight: 280, overflowY: "auto", display: "flex", flexDirection: "column", gap: 12 }}>
+              {msgs.map((m, i) => (
+                <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", ...(m.mentor ? { background: "#f0fdf4", margin: "0 -20px", padding: "8px 20px", borderLeft: "3px solid #10b981" } : {}) }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: m.c + "22", color: m.c, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 11, flexShrink: 0 }}>{m.a}</div>
+                  <div>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 2 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: m.c }}>{m.u}</span>
+                      {m.mentor && <span style={{ fontSize: 9, fontWeight: 700, background: "#dcfce7", color: "#15803d", padding: "2px 6px", borderRadius: 4 }}>MENTOR</span>}
+                      <span style={{ fontSize: 11, color: "#9ca3af" }}>{m.time}</span>
                     </div>
+                    <p style={{ fontSize: 14, color: "#374151" }}>{m.t}</p>
                   </div>
                 </div>
               ))}
             </div>
-
-            {/* Chat panel */}
-            <div style={{ display: "flex", flexDirection: "column", padding: 16, gap: 12, overflow: "hidden" }}>
-              {/* Chat header */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 12, borderBottom: `1px solid ${C.border}` }}>
-                <Avatar initials="AM" grad="linear-gradient(135deg,#00d4aa,#00b8d9)" size={28} />
-                <div>
-                  <div style={{ fontSize: "0.85rem", fontWeight: 700, color: C.text }}>Alex M.</div>
-                  <div style={{ fontSize: "0.7rem", color: "#22c55e", fontWeight: 600 }}>● Online</div>
-                </div>
-              </div>
-
-              {/* Messages */}
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, overflow: "hidden" }}>
-                {CHAT_MESSAGES.map((msg, i) => (
-                  <div key={i} style={{
-                    display: "flex", gap: 8, alignItems: "flex-end",
-                    flexDirection: msg.mine ? "row-reverse" : "row",
-                  }}>
-                    <Avatar
-                      initials={msg.mine ? "ME" : "AM"}
-                      grad={msg.mine ? "linear-gradient(135deg,#f472b6,#fb923c)" : "linear-gradient(135deg,#00d4aa,#00b8d9)"}
-                      size={24}
-                    />
-                    <div style={{
-                      maxWidth: "72%", padding: "8px 13px",
-                      borderRadius: msg.mine ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-                      fontSize: "0.78rem", lineHeight: 1.5, fontWeight: msg.mine ? 600 : 500,
-                      background: msg.mine ? `linear-gradient(135deg, ${C.a1}, ${C.a2})` : C.s3,
-                      color: msg.mine ? "#0a0c10" : C.text,
-                    }}>
-                      {msg.text}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Input bar */}
-              <div style={{
-                display: "flex", gap: 8, alignItems: "center",
-                padding: "10px 14px", marginTop: 8,
-                background: C.s2, borderRadius: 12, border: `1px solid ${C.border}`,
-              }}>
-                <span style={{ flex: 1, fontSize: "0.75rem", color: C.dim }}>Type a message…</span>
-                <div style={{
-                  width: 28, height: 28, borderRadius: 8,
-                  background: `linear-gradient(135deg, ${C.a1}, ${C.a2})`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="#0a0c10" strokeWidth="2.5">
-                    <line x1="22" y1="2" x2="11" y2="13" />
-                    <polygon points="22 2 15 22 11 13 2 9 22 2" fill="#0a0c10" />
-                  </svg>
-                </div>
-              </div>
+            <div style={{ padding: "12px 20px", borderTop: "1px solid #e5e7eb", display: "flex", gap: 10 }}>
+              <input value={msg} onChange={e => setMsg(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Ask a question..." style={{ flex: 1, padding: "10px 14px", border: "1.5px solid #e5e7eb", borderRadius: 8, fontSize: 14, outline: "none" }} />
+              <button onClick={send} style={{ padding: "10px 18px", background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13 }}>Send ↑</button>
             </div>
-
           </div>
         </div>
-      </div>
-    </section>
-  );
-}
+      </section>
 
-function FeaturesSection() {
-  return (
-    <section style={{ padding: "96px 5%", position: "relative", zIndex: 1 }}>
-      <SectionLabel>Why Skill Share</SectionLabel>
-      <SectionHeading>Everything you need to<br />communicate & grow</SectionHeading>
-      <SectionSub>Built for teams, learners, and creators — in a simple, focused experience.</SectionSub>
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
-        {FEATURES.map(f => (
-          <div key={f.title} className="card" style={{
-            background: C.surface, border: `1px solid ${C.border}`,
-            borderRadius: 18, padding: "32px 28px",
-            boxShadow: "0 2px 12px rgba(0,0,0,0.4)",
-            transition: "all 0.25s",
-          }}>
-            <div style={{
-              width: 52, height: 52, borderRadius: 14, fontSize: "1.4rem",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              marginBottom: 20,
-              background: "rgba(0,212,170,0.08)", border: "1px solid rgba(0,212,170,0.15)",
-            }}>
-              {f.icon}
-            </div>
-            <div style={{ fontFamily: "'Cabinet Grotesk', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em", marginBottom: 10, color: C.text }}>
-              {f.title}
-            </div>
-            <p style={{ fontSize: "0.92rem", color: C.muted, lineHeight: 1.65, fontWeight: 500 }}>
-              {f.desc}
-            </p>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function HowItWorksSection() {
-  return (
-    <section style={{
-      padding: "96px 5%", position: "relative", zIndex: 1,
-      background: "linear-gradient(160deg, rgba(0,212,170,0.03), rgba(0,184,217,0.04))",
-      borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`,
-    }}>
-      <SectionLabel>How It Works</SectionLabel>
-      <SectionHeading>Up and running in<br />three simple steps</SectionHeading>
-      <SectionSub>From sign-up to your first conversation in under a minute.</SectionSub>
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 32 }}>
-        {STEPS.map(step => (
-          <div key={step.num} style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-            <div style={{
-              width: 58, height: 58, borderRadius: "50%",
-              background: `linear-gradient(135deg, ${C.a1}, ${C.a2})`,
-              color: "#0a0c10",
-              fontFamily: "'Cabinet Grotesk', sans-serif",
-              fontWeight: 900, fontSize: "1.3rem",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              marginBottom: 20,
-              boxShadow: "0 0 24px rgba(0,212,170,0.4), 0 6px 20px rgba(0,0,0,0.4)",
-              border: `3px solid ${C.bg}`,
-            }}>
-              {step.num}
-            </div>
-            <div style={{ fontFamily: "'Cabinet Grotesk', sans-serif", fontWeight: 800, fontSize: "1.08rem", letterSpacing: "-0.02em", marginBottom: 8, color: C.text }}>
-              {step.title}
-            </div>
-            <p style={{ fontSize: "0.9rem", color: C.muted, lineHeight: 1.65, fontWeight: 500 }}>
-              {step.desc}
-            </p>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function CtaSection() {
-  return (
-    <section style={{
-      padding: "96px 5%", position: "relative", zIndex: 1,
-      display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
-    }}>
-      <div style={{
-        maxWidth: 580, padding: 64, borderRadius: 28,
-        border: `1px solid ${C.bAccent}`,
-        background: "linear-gradient(145deg, rgba(0,212,170,0.05), rgba(0,184,217,0.06))",
-      }}>
-        <h2 style={{
-          fontFamily: "'Cabinet Grotesk', sans-serif",
-          fontWeight: 900, fontSize: "clamp(2rem, 4vw, 2.8rem)",
-          letterSpacing: "-0.03em", lineHeight: 1.15,
-          color: C.text, marginBottom: 16,
-        }}>
-          Start your journey with<br /><span className="grad">Skill Share</span> today
-        </h2>
-        <p style={{ fontSize: "1.05rem", color: C.muted, marginBottom: 36, fontWeight: 500 }}>
-          Join thousands already connecting, sharing, and growing together.
-        </p>
-        <a href="/Signup" className="btn-p" style={{
-          padding: "15px 42px", borderRadius: 14,
-          fontWeight: 700, fontSize: "1.05rem", color: "#0a0c10",
-          background: `linear-gradient(135deg, ${C.a1}, ${C.a2})`,
-          textDecoration: "none",
-          boxShadow: "0 8px 32px rgba(0,212,170,0.42)",
-          transition: "all 0.22s",
-          display: "inline-flex", alignItems: "center", gap: 8,
-        }}>
-          Join Now — It's Free
-          <svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </a>
-
-        {/* Stacked avatars + count */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 28, justifyContent: "center" }}>
-          <div style={{ display: "flex" }}>
-            {CTA_AVATARS.map(([initials, grad], idx) => (
-              <div key={initials} style={{
-                width: 32, height: 32, borderRadius: "50%",
-                background: grad, border: `2px solid ${C.bg}`,
-                marginLeft: idx ? -8 : 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "0.65rem", fontWeight: 700, color: "#fff",
-              }}>
-                {initials}
+      {/* MENTORS */}
+      <section style={{ background: "#f9fafb", width: "100%" }}>
+        <div className="section-inner" style={{ padding: "72px 32px" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#4f46e5", letterSpacing: "2px", marginBottom: 8, textAlign: "center" }}>MENTORS</p>
+          <h2 style={{ fontSize: "clamp(22px,3vw,32px)", fontWeight: 900, textAlign: "center", marginBottom: 40, letterSpacing: "-0.5px" }}>Learn from the Best</h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
+            {MENTORS.map((m, i) => (
+              <div key={i} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 14, padding: 24, textAlign: "center" }}>
+                <div style={{ width: 60, height: 60, borderRadius: "50%", background: m.color + "22", color: m.color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, margin: "0 auto 12px", border: `2px solid ${m.color}44` }}>{m.avatar}</div>
+                <div style={{ fontWeight: 800, fontSize: 15, marginBottom: 4 }}>{m.name}</div>
+                <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 10 }}>{m.role}</div>
+                <div style={{ fontSize: 12, background: "#f3f4f6", padding: "4px 12px", borderRadius: 100, display: "inline-block", color: "#374151", fontWeight: 600 }}>{m.courses} courses</div>
               </div>
             ))}
           </div>
-          <span style={{ fontSize: "0.85rem", color: C.muted, fontWeight: 600 }}>
-            <span style={{ color: C.a1 }}>2,400+</span> people already onboard
-          </span>
         </div>
-      </div>
-    </section>
-  );
-}
+      </section>
 
-function Footer() {
-  const links = ["Features", "How it works", "Login", "Sign Up", "Privacy", "Terms"];
-  return (
-    <footer style={{
-      padding: "44px 5%", position: "relative", zIndex: 1,
-      borderTop: `1px solid ${C.border}`,
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      flexWrap: "wrap", gap: 20,
-    }}>
-      <Logo size={28} />
-      <div style={{ display: "flex", gap: 28, flexWrap: "wrap" }}>
-        {links.map(l => (
-          <a key={l} href="#" className="footer-link" style={{
-            fontSize: "0.88rem", fontWeight: 500,
-            color: C.dim, textDecoration: "none", transition: "color 0.2s",
-          }}>
-            {l}
-          </a>
-        ))}
-      </div>
-      <span style={{ fontSize: "0.82rem", color: C.dim }}>© 2026 Skill Share. All rights reserved.</span>
-    </footer>
-  );
-}
+      {/* CTA */}
+      <section style={{ background: "#4f46e5", width: "100%" }}>
+        <div className="section-inner" style={{ padding: "80px 32px", textAlign: "center" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#a5b4fc", letterSpacing: "2px", marginBottom: 16 }}>START TODAY</p>
+          <h2 style={{ fontSize: "clamp(28px,4vw,48px)", fontWeight: 900, color: "#fff", letterSpacing: "-1px", marginBottom: 14 }}>Your Learning Journey<br />Begins Here</h2>
+          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.7)", marginBottom: 36 }}>Join millions of learners. No credit card required for the first 7 days.</p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 24 }}>
+            <button style={{ padding: "14px 32px", background: "#fff", color: "#4f46e5", border: "none", borderRadius: 10, fontWeight: 800, fontSize: 15 }}>Create Free Account</button>
+            <button style={{ padding: "14px 32px", background: "transparent", color: "#fff", border: "2px solid rgba(255,255,255,0.4)", borderRadius: 10, fontWeight: 700, fontSize: 15 }}>View All Courses</button>
+          </div>
+          <div style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
+            {["✓ 7-day free trial", "✓ Cancel anytime", "✓ 500+ live courses"].map(b => (
+              <span key={b} style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", fontWeight: 500 }}>{b}</span>
+            ))}
+          </div>
+        </div>
+      </section>
 
-// ─── MAIN APP ─────────────────────────────────────────────────────────────────
-
-export default function SkillShare() {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  return (
-    <div style={{
-      minHeight: "100vh",
-      width: "100%",
-      background: C.bg,
-      color: C.text,
-      overflowX: "hidden",
-    }}>
-      <style>{GLOBAL_CSS}</style>
-
-      <Navbar scrolled={scrolled} />
-      <HeroSection />
-      <FeaturesSection />
-      <HowItWorksSection />
-      <CtaSection />
-      <Footer />
+      {/* FOOTER */}
+      <footer style={{ background: "#111827", width: "100%" }}>
+        <div className="section-inner" style={{ padding: "48px 32px 24px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 32, marginBottom: 40 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <span style={{ background: "#4f46e5", color: "#fff", width: 28, height: 28, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14 }}>B</span>
+                <span style={{ fontWeight: 800, fontSize: 16, color: "#fff" }}>Brain<span style={{ color: "#818cf8" }}>Link</span></span>
+              </div>
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>Empowering minds. Shaping futures.</p>
+            </div>
+            {[["Platform", ["Courses", "Live Classes", "Certificates", "AI Paths"]],["Company", ["About", "Blog", "Careers", "Press"]],["Support", ["Help Center", "Terms", "Privacy", "Contact"]]].map(([title, links]) => (
+              <div key={title}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 12 }}>{title}</div>
+                {links.map(l => <div key={l} style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", marginBottom: 8 }}>{l}</div>)}
+              </div>
+            ))}
+          </div>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>© 2025 BrainLink, Inc. All rights reserved.</span>
+            <div style={{ display: "flex", gap: 14 }}>
+              {["𝕏", "in", "f", "▶"].map((icon, i) => <span key={i} style={{ fontSize: 15, color: "rgba(255,255,255,0.35)", cursor: "pointer" }}>{icon}</span>)}
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
