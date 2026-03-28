@@ -12,21 +12,31 @@ const socketHandler = (io) => {
       io.emit("online-users", Array.from(onlineUsers.keys()));
     });
 
-    socket.on("join_room", (room) => {
-      socket.join(room);
-      console.log("Joined room:", room);
-    });
+socket.on("join_room", (room) => {
+  socket.join(room);
 
-    socket.on("send_message", async (data) => {
-      try {
-        const newMessage = new Message(data);
-        await newMessage.save();
+  const clients = io.sockets.adapter.rooms.get(room);
 
-        socket.to(data.room).emit("receive_message", data);
-      } catch (err) {
-        console.error(err);
-      }
-    });
+  console.log("Room:", room);
+  console.log("Users in room:", clients ? clients.size : 0);
+});
+
+  socket.on("send_message", async (data) => {
+  try {
+    const newMessage = new Message(data);
+    await newMessage.save();
+
+    const formattedMessage = {
+      ...newMessage.toObject(),
+      sender: newMessage.sender.toString(), // 👈 CRITICAL FIX
+    };
+
+    io.to(data.room).emit("receive_message", formattedMessage);
+
+  } catch (err) {
+    console.error(err);
+  }
+});
 
     socket.on("disconnect", () => {
       console.log("User disconnected:", socket.id);
