@@ -69,7 +69,10 @@ function Chat() {
 
   const userId = localStorage.getItem("userId");
   const { id } = useParams();
-  const room   = [String(userId), String(id)].sort().join("_");
+const room = [userId, id].sort().join("_");
+console.log("userId:", userId);
+console.log("chat id:", id);
+console.log("room:", room);
 
   // register user
   useEffect(() => {
@@ -77,22 +80,37 @@ function Chat() {
   }, [userId]);
 
   // join room
-  useEffect(() => {
-    if (!userId || !id) return;
+useEffect(() => {
+  if (!room) return;
+
+  const joinRoom = () => {
+    console.log("JOINING ROOM:", room);
     socket.emit("join_room", room);
-    console.log("JOINED ROOM:", room);
-  }, [userId, id, room]);
+  };
+
+  if (socket.connected) {
+    joinRoom();
+  } else {
+    socket.on("connect", joinRoom);
+  }
+
+  return () => {
+    socket.off("connect", joinRoom);
+  };
+}, [room]);
 
   // receive messages
-  useEffect(() => {
-    const handleMessage = (data) => {
-      console.log("📩 RECEIVED:", data);
-      setMessages((prev) => [...prev, data]);
-    };
-    socket.on("receive_message", handleMessage);
-    return () => socket.off("receive_message", handleMessage);
-  }, []);
+useEffect(() => {
+  const handleMessage = (msg) => {
+    setMessages((prev) => [...prev, msg]);
+  };
 
+  socket.on("receive_message", handleMessage);
+
+  return () => {
+    socket.off("receive_message", handleMessage);
+  };
+}, []);
   // load old messages
   useEffect(() => {
     const loadMessages = async () => {
@@ -108,14 +126,19 @@ function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const sendMessage = () => {
-    if (!text.trim()) return;
-    const messageData = { room, sender: userId, receiver: id, text };
-    console.log("Sending:", messageData);
-    socket.emit("send_message", messageData);
-    setMessages((prev) => [...prev, messageData]);
-    setText("");
+ const sendMessage = () => {
+  if (!text.trim()) return;
+
+  const messageData = {
+    room,
+    sender: userId,
+    receiver: id,
+    text,
   };
+
+  socket.emit("send_message", messageData);
+  setText("");
+};
 
   // background glow blobs (light theme)
   const blobs = [
@@ -186,9 +209,15 @@ function Chat() {
               </div>
             )}
 
-            {messages.map((msg, index) => {
-              const isMine = (msg.sender || msg.from) === userId;
-              const msgText = msg?.text || msg;
+        {messages.map((msg, index) => {
+  const senderId =
+    typeof msg.sender === "object"
+      ? msg.sender._id
+      : msg.sender || msg.from;
+
+  const isMine = String(senderId) === String(userId);
+
+  const msgText = msg?.text || msg;
               return (
                 <div key={index} className="msg-bubble" style={{ display: "flex", flexDirection: isMine ? "row-reverse" : "row", alignItems: "flex-end", gap: 8 }}>
                   <Avatar seed={isMine ? userId : id} size={28} />
