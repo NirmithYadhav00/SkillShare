@@ -136,6 +136,8 @@ useEffect(() => {
     text,
   };
 
+    setMessages((prev) => [...prev, messageData]);
+
   socket.emit("send_message", messageData);
   setText("");
 };
@@ -210,12 +212,12 @@ useEffect(() => {
             )}
 
         {messages.map((msg, index) => {
-  const senderId =
-    typeof msg.sender === "object"
-      ? msg.sender._id
-      : msg.sender || msg.from;
-
-  const isMine = String(senderId) === String(userId);
+const senderId = msg.sender || msg.senderId;console.log("FULL MSG:", msg);
+console.log("sender field:", msg.sender);
+console.log("computed senderId:", senderId);
+console.log("userId:", userId);
+  const isMine = 
+                  String(senderId) === String(userId);
 
   const msgText = msg?.text || msg;
               return (

@@ -11,6 +11,11 @@ function EditProfile() {
   const [skillsOffered, setSkillsOffered] = useState("");
   const [skillsWanted, setSkillsWanted] = useState("");
 
+  const user = JSON.parse(localStorage.getItem("user"));
+
+if (user._id !== id) {
+  return <h3>Unauthorized</h3>;
+}
   const handleSubmit = async (e) => {
     e.preventDefault();
 
