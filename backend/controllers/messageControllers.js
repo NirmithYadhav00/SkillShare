@@ -3,10 +3,16 @@ const Message = require("../models/Message");
 // GET messages by room
 const getMessages = async (req, res) => {
   try {
+    console.log("Fetching room:", req.params.room);
     const messages = await Message.find({ room: req.params.room })
       .sort({ createdAt: 1 });
 
-    res.json(messages);
+    const formatted = messages.map(msg => ({
+      ...msg.toObject(),
+      sender: msg.sender?.toString(), // 🔥 FIX HERE
+    }));
+
+    res.json(formatted);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

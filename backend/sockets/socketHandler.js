@@ -1,7 +1,6 @@
 const Message = require("../models/Message");
 
 const onlineUsers = new Map();
-
 const socketHandler = (io) => {
   io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
@@ -23,12 +22,20 @@ socket.on("join_room", (room) => {
 
   socket.on("send_message", async (data) => {
   try {
-    const newMessage = new Message(data);
-    await newMessage.save();
+ console.log("Saving room:", data.room);
 
+const newMessage = new Message({
+  senderId: data.sender,      // ✅ FIX
+  receiverId: data.receiver,  // ✅ FIX
+  room: data.room,
+  text: data.text,
+});    await newMessage.save();
+const clients = io.sockets.adapter.rooms.get(data.room);
+console.log("Room:", data.room);
+console.log("Users in room:", clients ? clients.size : 0);
     const formattedMessage = {
       ...newMessage.toObject(),
-      sender: newMessage.sender.toString(), // 👈 CRITICAL FIX
+      sender: newMessage.sender.id,
     };
 
     io.to(data.room).emit("receive_message", formattedMessage);
