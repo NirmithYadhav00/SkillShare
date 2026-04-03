@@ -3,30 +3,36 @@ const bcrypt = require("bcryptjs");
 
 const registerUser = async (req, res) => {
   try {
+    const { name, username, email, password } = req.body;
 
-    const { name, email, password } = req.body;
-
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
 
     if (existingUser) {
-      return res.status(400).json({
-        message: "User already exists"
-      });
+      if (existingUser.email === email) {
+        return res.status(400).json({ message: "Email already registered" });
+      }
+
+      if (existingUser.username === username) {
+        return res.status(400).json({
+          message: "Username already taken"
+        });
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = new User({
+    const newUser = new User({
       name,
+      username,
       email,
       password: hashedPassword
     });
 
-    await user.save();
+    await newUser.save();
 
     res.json({
       message: "User saved to MongoDB",
-      user
+      user: newUser
     });
 
   } catch (error) {

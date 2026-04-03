@@ -1,12 +1,18 @@
 const express = require("express");
 const router = express.Router();
+console.log("userController loaded");
+const { 
+  getProfile, 
+  updateProfile, 
+  getAllUsers,
+  registerUser
+} = require("../controllers/userController");
 
-const { getProfile, updateProfile, getAllUsers } = require("../controllers/userController");
+router.post("/register", registerUser);
 
-router.get("/profile/:id", getProfile);
 router.get("/", getAllUsers);
+
 router.get("/profile/:id", getProfile);
-router.get("/:id", getAllUsers);
 
 router.put("/profile/:id", updateProfile);
 
