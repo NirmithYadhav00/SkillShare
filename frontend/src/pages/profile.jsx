@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
-
+import { useNavigate } from "react-router-dom";
 function Profile() {
   const { id } = useParams();
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState("about");
+const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -92,14 +93,18 @@ function Profile() {
 
           {/* Action Buttons */}
           <div style={styles.actionRow}>
-            <button style={styles.messageBtn}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" style={{ marginRight: 6 }}>
+<button
+  style={styles.messageBtn}
+  onClick={() => navigate(`/chat/${user._id}`)}
+>              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" style={{ marginRight: 6 }}>
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
               Send message
             </button>
-            <button style={styles.contactBtn}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" style={{ marginRight: 5 }}>
+<button
+  style={styles.contactBtn}
+  onClick={() => alert(`You can now message ${user.name}`)}
+>              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" style={{ marginRight: 5 }}>
                 <polyline points="20 6 9 17 4 12" />
               </svg>
               Connect
