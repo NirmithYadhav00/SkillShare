@@ -1,6 +1,12 @@
 const User = require("../models/User");
+const jwt = require("jsonwebtoken");
 
-// REGISTER USER
+
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: "7d"
+  });
+};
 const registerUser = async (req, res) => {
   try {
     const { name, username, email, password } = req.body;
@@ -29,10 +35,12 @@ const registerUser = async (req, res) => {
 
     await user.save();
 
-    res.status(201).json({
-      message: "User registered successfully",
-      user
-    });
+  res.status(201).json({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  token: generateToken(user._id)
+});
 
   } catch (error) {
     console.log("REGISTER ERROR:", error);
@@ -68,13 +76,24 @@ const getAllUsers = async (req, res) => {
 // UPDATE PROFILE
 const updateProfile = async (req, res) => {
   try {
+    const loggedInUserId = req.user._id.toString(); // from token
+    const requestedUserId = req.params.id;
+
+    // 🔥 SECURITY CHECK
+    if (loggedInUserId !== requestedUserId) {
+      return res.status(403).json({
+        message: "You can only edit your own profile"
+      });
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
+      requestedUserId,
       req.body,
-      { new: true }
+      { new: true, runValidators: true }
     ).select("-password");
 
     res.json(updatedUser);
+
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Server error" });

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 console.log("userController loaded");
+const protect = require("../middleware/authMiddleware");
 const { 
   getProfile, 
   updateProfile, 
@@ -14,6 +15,6 @@ router.get("/", getAllUsers);
 
 router.get("/profile/:id", getProfile);
 
-router.put("/profile/:id", updateProfile);
+router.put("/profile/:id", protect, updateProfile);
 
 module.exports = router;

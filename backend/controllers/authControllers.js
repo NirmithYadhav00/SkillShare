@@ -1,11 +1,22 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
+// 🔥 Token generator (OUTSIDE functions)
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: "7d"
+  });
+};
+
+// ================= REGISTER =================
 const registerUser = async (req, res) => {
   try {
     const { name, username, email, password } = req.body;
 
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    const existingUser = await User.findOne({
+      $or: [{ email }, { username }]
+    });
 
     if (existingUser) {
       if (existingUser.email === email) {
@@ -30,9 +41,12 @@ const registerUser = async (req, res) => {
 
     await newUser.save();
 
-    res.json({
-      message: "User saved to MongoDB",
-      user: newUser
+    // ✅ RETURN TOKEN
+    res.status(201).json({
+      _id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+      token: generateToken(newUser._id)
     });
 
   } catch (error) {
@@ -40,11 +54,9 @@ const registerUser = async (req, res) => {
   }
 };
 
-
+// ================= LOGIN =================
 const loginUser = async (req, res) => {
-
   try {
-
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
@@ -63,19 +75,19 @@ const loginUser = async (req, res) => {
       });
     }
 
+    // ✅ RETURN TOKEN
     res.json({
-      message: "Login successful",
-      user
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user._id)
     });
 
   } catch (error) {
-
     res.status(500).json({
       message: "Server error"
     });
-
   }
-
 };
 
 module.exports = { registerUser, loginUser };
