@@ -1,47 +1,110 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 
 function EditProfile() {
-
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const userId = localStorage.getItem("userId");
+
   const [skillsOffered, setSkillsOffered] = useState("");
   const [skillsWanted, setSkillsWanted] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  // 🔥 Fetch existing profile data
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!userId || userId !== id) {
+        setLoading(false);
+        return;
+      }
 
-if (user._id !== id) {
-  return <h3>Unauthorized</h3>;
-}
+      try {
+        const res = await axios.get(
+          `http://localhost:5000/api/users/profile/${id}`
+        );
+
+        setSkillsOffered(res.data.skillsOffered?.join(", ") || "");
+        setSkillsWanted(res.data.skillsWanted?.join(", ") || "");
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [id, userId]);
+
+  // 🔥 Submit update
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
+      const token = localStorage.getItem("token");
 
-      await axios.put(`http://localhost:5000/api/users/profile/${id}`, {
-        skillsOffered: skillsOffered.split(","),
-        skillsWanted: skillsWanted.split(",")
-      });
+      // ❗ Safety check
+      if (!token || token === "undefined") {
+        alert("You are not logged in properly. Please login again.");
+        return;
+      }
+
+      await axios.put(
+        `http://localhost:5000/api/users/profile/${id}`,
+        {
+          skillsOffered: skillsOffered
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+
+          skillsWanted: skillsWanted
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       navigate(`/profile/${id}`);
-
     } catch (error) {
       console.log(error);
+      alert("Update failed. Check console.");
     }
   };
 
+  // 🔒 Unauthorized access
+  if (!userId || userId !== id) {
+    return (
+      <div>
+        <Navbar />
+        <h3>You are not allowed to edit this profile</h3>
+      </div>
+    );
+  }
+
+  // ⏳ Loading state
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center" }}>
+        <Navbar />
+        <h3>Loading profile...</h3>
+      </div>
+    );
+  }
+
   return (
     <div style={{ textAlign: "center" }}>
-
       <Navbar />
 
       <h2>Edit Profile</h2>
 
       <form onSubmit={handleSubmit}>
-
         <input
           type="text"
           placeholder="Skills you offer (comma separated)"
@@ -61,9 +124,7 @@ if (user._id !== id) {
         <br /><br />
 
         <button type="submit">Save</button>
-
       </form>
-
     </div>
   );
 }

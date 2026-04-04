@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
-import { socket } from "./socket";
+import { connectSocket, socket } from "./socket";
 
 // ─── COLORS (Brain Link Light Theme) ─────────────────────────────────────────
 const C = {
@@ -80,20 +80,22 @@ function Dashboard() {
     const token = localStorage.getItem("token");
     if (!token) { navigate("/login"); return; }
 
-    const fetchUsers = async () => {
-      try {
-        const userId = localStorage.getItem("userId");
-        const res = await axios.get(`http://localhost:5000/api/users/${userId}`);
-        setUsers(res.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
+  const fetchUsers = async () => {
+  try {
+    const res = await axios.get("http://localhost:5000/api/users");
+
+    setUsers(res.data);
+  } catch (error) {
+    console.log(error);
+  }
+};
     fetchUsers();
   }, [navigate]);
 
   // online users via socket
   useEffect(() => {
+    connectSocket();
+
     socket.on("online-users", (users) => {
       console.log("🟢 Online users:", users);
       setOnlineUsers(users);
@@ -101,10 +103,13 @@ function Dashboard() {
     return () => socket.off("online-users");
   }, []);
 
-  const filteredUsers = users.filter((user) =>
+const userId = localStorage.getItem("userId");
+
+const filteredUsers = users
+  .filter((user) => user._id !== userId) // 🔥 remove yourself
+  .filter((user) =>
     user.skillsOffered?.join(" ").toLowerCase().includes(search.toLowerCase())
   );
-
   // background glow blobs (light theme)
   const blobs = [
     { w: 500, h: 500, color: "rgba(0,86,210,0.05)",   top: -160, left: -140,  anim: "drift 13s ease-in-out infinite alternate" },

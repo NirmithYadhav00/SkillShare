@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
-import { socket } from "./pages/socket";
+import { connectSocket, socket } from "./pages/socket";
 import Landing from "./pages/Landing";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
@@ -14,16 +14,22 @@ function App() {
   useEffect(() => {
     const userId = localStorage.getItem("userId");
 
-    if (!socket.connected) {
-      socket.connect();
-    }
+    const setupSocket = async () => {
+      const connected = await connectSocket();
 
-    if (userId) {
-      socket.emit("register_user", userId); 
-      console.log(" User registered:", userId);
-    } else {
-      console.log(" No userId found");
-    }
+      if (!connected) {
+        return;
+      }
+
+      if (userId) {
+        socket.emit("register_user", userId);
+        console.log(" User registered:", userId);
+      } else {
+        console.log(" No userId found");
+      }
+    };
+
+    setupSocket();
   }, []);
 
   useEffect(() => {

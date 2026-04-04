@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import Navbar from "../components/Navbar";
 import { useParams } from "react-router-dom";
-import { socket } from "./socket";
+import { connectSocket, socket } from "./socket";
 
 // ─── COLORS (Brain Link Light Theme) ─────────────────────────────────────────
 const C = {
@@ -76,7 +76,16 @@ console.log("room:", room);
 
   // register user
   useEffect(() => {
-    if (userId) socket.emit("add-user", userId);
+    const registerUser = async () => {
+      if (!userId) return;
+
+      const connected = await connectSocket();
+      if (connected) {
+        socket.emit("add-user", userId);
+      }
+    };
+
+    registerUser();
   }, [userId]);
 
   // join room

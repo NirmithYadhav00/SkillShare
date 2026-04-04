@@ -1,28 +1,96 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import { useNavigate } from "react-router-dom";
+
 function Profile() {
   const { id } = useParams();
+  const navigate = useNavigate();
+
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState("about");
-const navigate = useNavigate();
+  const [connectionStatus, setConnectionStatus] = useState("none");
+  const isOwnProfile = user ? localStorage.getItem("userId") === String(user._id) : false;
+const [connectionId, setConnectionId] = useState(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await axios.get(
-          `http://localhost:5000/api/users/profile/${id}`
-        );
-        setUser(res.data);
-      } catch (error) {
-        console.log(error);
+  // ✅ Handle Connect Click
+  const handleConnect = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Please log in first");
+      return;
+    }
+
+    try {
+      await axios.post(
+        `http://localhost:5000/api/connections/send/${id}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setConnectionStatus("pending"); // instant UI update
+    } catch (err) {
+      if (err.response?.status === 404) {
+        alert("Connection feature is not available yet");
+        return;
       }
-    };
-    fetchUser();
-  }, [id]);
 
+      console.log(err);
+    }
+  };
+const handleAccept = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    await axios.put(
+      `http://localhost:5000/api/connections/accept/${connectionId}`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    setConnectionStatus("connected");
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const handleReject = () => {
+  console.log("Rejected");
+};
+
+  // ✅ Load Data
+useEffect(() => {
+  const loadData = async () => {
+    try {
+      const userRes = await axios.get(
+        `http://localhost:5000/api/users/profile/${id}`
+      );
+      setUser(userRes.data);
+
+      const token = localStorage.getItem("token");
+
+      const connRes = await axios.get(
+        `http://localhost:5000/api/connections/status/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+setConnectionStatus(connRes.data.status);
+setConnectionId(connRes.data.connectionId);    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  loadData();
+}, [id]);
+
+  // ⏳ Loading State
   if (!user) {
     return (
       <div style={styles.loadingWrapper}>
@@ -37,7 +105,7 @@ const navigate = useNavigate();
       <Navbar />
 
       <div style={styles.container}>
-        {/* Left Sidebar */}
+        {/* Sidebar */}
         <aside style={styles.sidebar}>
           <div style={styles.avatarWrapper}>
             {user.profilePic ? (
@@ -49,7 +117,7 @@ const navigate = useNavigate();
             )}
           </div>
 
-          {/* Skills Teaches */}
+          {/* Skills */}
           <div style={styles.sideSection}>
             <p style={styles.sideLabel}>SKILLS TEACHES</p>
             {user.skillsOffered?.length > 0 ? (
@@ -64,13 +132,14 @@ const navigate = useNavigate();
             )}
           </div>
 
-          {/* Skills Wants */}
           <div style={styles.sideSection}>
             <p style={styles.sideLabel}>SKILLS WANTS</p>
             {user.skillsWanted?.length > 0 ? (
               user.skillsWanted.map((skill, i) => (
                 <div key={i} style={styles.skillItem}>
-                  <span style={{ ...styles.skillDot, background: "#f59e0b" }} />
+                  <span
+                    style={{ ...styles.skillDot, background: "#f59e0b" }}
+                  />
                   <span style={styles.skillText}>{skill}</span>
                 </div>
               ))
@@ -80,36 +149,71 @@ const navigate = useNavigate();
           </div>
         </aside>
 
-        {/* Main Content */}
+        {/* Main */}
         <main style={styles.main}>
-          {/* Header */}
           <div style={styles.profileHeader}>
             <div>
               <h1 style={styles.name}>{user.name}</h1>
               <p style={styles.role}>{user.branch}</p>
             </div>
-
           </div>
 
-          {/* Action Buttons */}
+          {/* Actions */}
           <div style={styles.actionRow}>
-<button
-  style={styles.messageBtn}
-  onClick={() => navigate(`/chat/${user._id}`)}
->              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" style={{ marginRight: 6 }}>
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              </svg>
-              Send message
-            </button>
-<button
-  style={styles.contactBtn}
-  onClick={() => alert(`You can now message ${user.name}`)}
->              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" style={{ marginRight: 5 }}>
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              Connect
-            </button>
-            <button style={styles.reportBtn}>Report user</button>
+            {!isOwnProfile ? (
+              <>
+                <button
+                  style={styles.messageBtn}
+                  onClick={() => navigate(`/chat/${user._id}`)}
+                >
+                  Send message
+                </button>
+
+               {connectionStatus === "none" && (
+  <button style={styles.contactBtn} onClick={handleConnect}>
+    Connect
+  </button>
+)}
+
+{connectionStatus === "pending" && (
+  <button style={styles.contactBtn} disabled>
+    Pending
+  </button>
+)}
+
+{connectionStatus === "incoming" && (
+  <>
+    <button style={styles.messageBtn} onClick={handleAccept}>
+      Accept
+    </button>
+
+    <button style={styles.reportBtn} onClick={handleReject}>
+      Reject
+    </button>
+  </>
+)}
+
+{connectionStatus === "connected" && (
+  <button style={styles.contactBtn} disabled>
+    Connected
+  </button>
+)}
+
+                <button
+                  style={styles.reportBtn}
+                  onClick={() => alert("User reported")}
+                >
+                  Report user
+                </button>
+              </>
+            ) : (
+              <button
+                style={styles.messageBtn}
+                onClick={() => navigate(`/edit-profile/${user._id}`)}
+              >
+                Edit Profile
+              </button>
+            )}
           </div>
 
           {/* Tabs */}
@@ -122,59 +226,22 @@ const navigate = useNavigate();
             </button>
           </div>
 
-          {/* About Content */}
+          {/* Info */}
           <div style={styles.aboutGrid}>
             <div style={styles.infoBlock}>
               <p style={styles.infoLabel}>CONTACT INFORMATION</p>
-
               <div style={styles.infoRow}>
-                <span style={styles.infoKey}>Email</span>
-                <span style={styles.infoValueBlue}>
-                  {user.email || "—"}
-                </span>
+                <span>Email</span>
+                <span>{user.email || "—"}</span>
               </div>
-
-              {user.phone && (
-                <div style={styles.infoRow}>
-                  <span style={styles.infoKey}>Phone</span>
-                  <span style={styles.infoValueBlue}>{user.phone}</span>
-                </div>
-              )}
-
-              {user.github && (
-                <div style={styles.infoRow}>
-                  <span style={styles.infoKey}>GitHub</span>
-                  <span style={styles.infoValueBlue}>{user.github}</span>
-                </div>
-              )}
-
-              {user.linkedin && (
-                <div style={styles.infoRow}>
-                  <span style={styles.infoKey}>LinkedIn</span>
-                  <span style={styles.infoValueBlue}>{user.linkedin}</span>
-                </div>
-              )}
             </div>
 
             <div style={styles.infoBlock}>
               <p style={styles.infoLabel}>BASIC INFORMATION</p>
-
               <div style={styles.infoRow}>
-                <span style={styles.infoKey}>Branch</span>
-                <span style={styles.infoValue}>{user.branch || "—"}</span>
+                <span>Branch</span>
+                <span>{user.branch || "—"}</span>
               </div>
-
-              <div style={styles.infoRow}>
-                <span style={styles.infoKey}>Year</span>
-                <span style={styles.infoValue}>{user.year ? `Year ${user.year}` : "—"}</span>
-              </div>
-
-              {user.bio && (
-                <div style={styles.infoRow}>
-                  <span style={styles.infoKey}>Bio</span>
-                  <span style={styles.infoValue}>{user.bio}</span>
-                </div>
-              )}
             </div>
           </div>
         </main>
@@ -219,8 +286,6 @@ const styles = {
     overflow: "hidden",
     minHeight: 520,
   },
-
-  /* Sidebar */
   sidebar: {
     width: 230,
     minWidth: 230,
@@ -290,8 +355,6 @@ const styles = {
     color: "#d1d5db",
     fontStyle: "italic",
   },
-
-  /* Main */
   main: {
     flex: 1,
     padding: "28px 32px",
@@ -317,32 +380,6 @@ const styles = {
     color: "#3b82f6",
     fontWeight: 500,
   },
-  headerMeta: {
-    display: "flex",
-    alignItems: "center",
-    gap: 14,
-  },
-  locationBadge: {
-    display: "flex",
-    alignItems: "center",
-    fontSize: 12.5,
-    color: "#6b7280",
-    background: "#f3f4f6",
-    padding: "4px 10px",
-    borderRadius: 20,
-  },
-  bookmarkBtn: {
-    display: "flex",
-    alignItems: "center",
-    gap: 5,
-    fontSize: 12.5,
-    color: "#9ca3af",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    padding: 0,
-  },
-
   actionRow: {
     display: "flex",
     gap: 10,
@@ -382,7 +419,6 @@ const styles = {
     cursor: "pointer",
     padding: "8px 6px",
   },
-
   tabRow: {
     display: "flex",
     borderBottom: "2px solid #f1f5f9",
@@ -410,7 +446,6 @@ const styles = {
     color: "#1d4ed8",
     cursor: "pointer",
   },
-
   aboutGrid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
@@ -435,22 +470,6 @@ const styles = {
     gridTemplateColumns: "80px 1fr",
     gap: 8,
     alignItems: "start",
-  },
-  infoKey: {
-    fontSize: 13,
-    color: "#6b7280",
-    fontWeight: 500,
-    paddingTop: 1,
-  },
-  infoValue: {
-    fontSize: 13.5,
-    color: "#111827",
-    fontWeight: 500,
-  },
-  infoValueBlue: {
-    fontSize: 13.5,
-    color: "#3b82f6",
-    fontWeight: 500,
   },
 };
 
