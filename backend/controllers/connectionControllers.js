@@ -5,6 +5,9 @@ const sendRequest = async (req, res) => {
     const sender = req.user.id;
     const receiver = req.params.userId;
 
+    console.log("SENDER:", sender);
+    console.log("RECEIVER:", receiver);
+
     if (sender === receiver) {
       return res.status(400).json({ msg: "Cannot connect to yourself" });
     }
@@ -16,8 +19,10 @@ const sendRequest = async (req, res) => {
       ],
     });
 
+    console.log("EXISTING:", existing);
+
     if (existing) {
-      return res.status(400).json({ msg: "Already exists" });
+      return res.status(400).json({ msg: "Connection already exists" });
     }
 
     const connection = await Connection.create({
@@ -27,7 +32,9 @@ const sendRequest = async (req, res) => {
     });
 
     res.json(connection);
+
   } catch (err) {
+    console.error(err);
     res.status(500).json({ msg: "Server error" });
   }
 };
@@ -94,4 +101,21 @@ const acceptRequest = async (req, res) => {
   }
 };
 
-module.exports = { sendRequest, getStatus, acceptRequest };
+const handleReject = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    await axios.put(
+      `http://localhost:5000/api/connections/reject/${connectionId}`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    setConnectionStatus("none"); // reset UI
+  } catch (err) {
+    console.log(err);
+  }
+};
+module.exports = { sendRequest, getStatus, acceptRequest, handleReject };
