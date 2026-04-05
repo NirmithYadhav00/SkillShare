@@ -142,7 +142,7 @@ function Login() {
             </div>
             <div>
               <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: C.muted, marginBottom: 7, letterSpacing: "0.05em" }}>PASSWORD</label>
-              <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="login-input" />
+              <input type="password" placeholder="********" value={password} onChange={(e) => setPassword(e.target.value)} className="login-input" />
             </div>
             <div style={{ marginTop: 8 }}>
               <button type="submit" className="login-btn">Login</button>

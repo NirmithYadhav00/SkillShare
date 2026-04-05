@@ -165,7 +165,7 @@ function Signup() {
             </div>
             <div>
               <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: C.muted, marginBottom: 7, letterSpacing: "0.05em" }}>PASSWORD</label>
-              <input type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" value={password} onChange={(e) => setPassword(e.target.value)} className="signup-input" required />
+              <input type="password" placeholder="********" value={password} onChange={(e) => setPassword(e.target.value)} className="signup-input" required />
             </div>
             <div style={{ marginTop: 8 }}>
               <button type="submit" className="signup-btn">Sign Up</button>

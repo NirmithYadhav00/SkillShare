@@ -38,8 +38,7 @@ const [connectionId, setConnectionId] = useState(null);
         return;
       }
 
-      console.log(err);
-    }
+console.log("ERROR:", err.response?.data || err.message);    }
   };
 const handleAccept = async () => {
   try {
@@ -54,41 +53,67 @@ const handleAccept = async () => {
     );
 
     setConnectionStatus("connected");
+  } 
+ catch (err) {
+  console.log("ERROR:", err.response?.data || err.message);
+}
+};
+
+const handleReject = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    await axios.put(
+      `http://localhost:5000/api/connections/reject/${connectionId}`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    // 🔥 IMPORTANT: reload fresh data
+    const connRes = await axios.get(
+      `http://localhost:5000/api/connections/status/${id}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    setConnectionStatus(connRes.data.status);
+    setConnectionId(connRes.data.connectionId);
+
   } catch (err) {
-    console.log(err);
+    console.log("ERROR:", err.response?.data || err.message);
   }
 };
 
-const handleReject = () => {
-  console.log("Rejected");
-};
-
   // ✅ Load Data
-useEffect(() => {
-  const loadData = async () => {
-    try {
-      const userRes = await axios.get(
-        `http://localhost:5000/api/users/profile/${id}`
-      );
-      setUser(userRes.data);
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const userRes = await axios.get(
+          `http://localhost:5000/api/users/profile/${id}`
+        );
+        setUser(userRes.data);
 
-      const token = localStorage.getItem("token");
+        const token = localStorage.getItem("token");
 
-      const connRes = await axios.get(
-        `http://localhost:5000/api/connections/status/${id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+        const connRes = await axios.get(
+          `http://localhost:5000/api/connections/status/${id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
-setConnectionStatus(connRes.data.status);
-setConnectionId(connRes.data.connectionId);    } catch (err) {
-      console.log(err);
-    }
-  };
+        setConnectionStatus(connRes.data.status);
+        setConnectionId(connRes.data.connectionId);
+      } catch (err) {
+        console.log("ERROR:", err.response?.data || err.message);
+      }
+    };
 
-  loadData();
-}, [id]);
+    loadData();
+  }, [id]);
 
   // ⏳ Loading State
   if (!user) {
@@ -168,8 +193,7 @@ setConnectionId(connRes.data.connectionId);    } catch (err) {
                 >
                   Send message
                 </button>
-
-               {connectionStatus === "none" && (
+{connectionStatus === "none" && (
   <button style={styles.contactBtn} onClick={handleConnect}>
     Connect
   </button>
@@ -183,11 +207,11 @@ setConnectionId(connRes.data.connectionId);    } catch (err) {
 
 {connectionStatus === "incoming" && (
   <>
-    <button style={styles.messageBtn} onClick={handleAccept}>
+    <button style={styles.contactBtn} onClick={handleAccept}>
       Accept
     </button>
 
-    <button style={styles.reportBtn} onClick={handleReject}>
+    <button style={styles.rejectBtn} onClick={handleReject}>
       Reject
     </button>
   </>
@@ -471,6 +495,19 @@ const styles = {
     gap: 8,
     alignItems: "start",
   },
+  rejectBtn: {
+  display: "flex",
+  alignItems: "center",
+  padding: "8px 18px",
+  background: "#ef4444", // red
+  color: "white",
+  border: "none",
+  borderRadius: 8,
+  fontSize: 13.5,
+  fontWeight: 600,
+  cursor: "pointer",
+  boxShadow: "0 2px 8px rgba(239,68,68,0.25)",
+}
 };
 
 export default Profile;
