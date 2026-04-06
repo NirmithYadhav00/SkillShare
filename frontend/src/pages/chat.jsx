@@ -127,7 +127,7 @@ function Chat() {
 
       try {
         const res = await fetch(
-          `http://localhost:5000/api/connections/status/${id}`,
+          `https://skillshare-ebe1.onrender.com/api/connections/status/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -188,7 +188,7 @@ useEffect(() => {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `http://localhost:5000/api/messages/${room}`,
+        `https://skillshare-ebe1.onrender.com/api/messages/${room}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -218,7 +218,7 @@ useEffect(() => {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `http://localhost:5000/api/messages/${room}`,
+        `https://skillshare-ebe1.onrender.com/api/messages/${room}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

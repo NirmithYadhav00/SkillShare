@@ -24,7 +24,7 @@ const [connectionId, setConnectionId] = useState(null);
 
     try {
       await axios.post(
-        `http://localhost:5000/api/connections/send/${id}`,
+        `https://skillshare-ebe1.onrender.com/api/connections/send/${id}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -45,7 +45,7 @@ const handleAccept = async () => {
     const token = localStorage.getItem("token");
 
     await axios.put(
-      `http://localhost:5000/api/connections/accept/${connectionId}`,
+      `https://skillshare-ebe1.onrender.com/api/connections/accept/${connectionId}`,
       {},
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -64,7 +64,7 @@ const handleReject = async () => {
     const token = localStorage.getItem("token");
 
     await axios.put(
-      `http://localhost:5000/api/connections/reject/${connectionId}`,
+      `https://skillshare-ebe1.onrender.com/api/connections/reject/${connectionId}`,
       {},
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -73,7 +73,7 @@ const handleReject = async () => {
 
     // 🔥 IMPORTANT: reload fresh data
     const connRes = await axios.get(
-      `http://localhost:5000/api/connections/status/${id}`,
+      `https://skillshare-ebe1.onrender.com/api/connections/status/${id}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -92,14 +92,14 @@ const handleReject = async () => {
     const loadData = async () => {
       try {
         const userRes = await axios.get(
-          `http://localhost:5000/api/users/profile/${id}`
+          `https://skillshare-ebe1.onrender.com/api/users/profile/${id}`
         );
         setUser(userRes.data);
 
         const token = localStorage.getItem("token");
 
         const connRes = await axios.get(
-          `http://localhost:5000/api/connections/status/${id}`,
+          `https://skillshare-ebe1.onrender.com/api/connections/status/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

@@ -106,7 +106,7 @@ const handleReject = async () => {
     const token = localStorage.getItem("token");
 
     await axios.put(
-      `http://localhost:5000/api/connections/reject/${connectionId}`,
+      `https://skillshare-ebe1.onrender.com/api/connections/reject/${connectionId}`,
       {},
       
       {

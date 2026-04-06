@@ -23,7 +23,7 @@ function EditProfile() {
 
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/users/profile/${id}`
+          `https://skillshare-ebe1.onrender.com/api/users/profile/${id}`
         );
 
         setSkillsOffered(res.data.skillsOffered?.join(", ") || "");
@@ -52,7 +52,7 @@ function EditProfile() {
       }
 
       await axios.put(
-        `http://localhost:5000/api/users/profile/${id}`,
+        `https://skillshare-ebe1.onrender.com/api/users/profile/${id}`,
         {
           skillsOffered: skillsOffered
             .split(",")

@@ -82,7 +82,7 @@ function Dashboard() {
 
   const fetchUsers = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/api/users");
+    const res = await axios.get("https://skillshare-ebe1.onrender.com/api/users");
 
     setUsers(res.data);
   } catch (error) {
