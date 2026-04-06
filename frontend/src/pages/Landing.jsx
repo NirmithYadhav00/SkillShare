@@ -166,7 +166,7 @@ const Send = () => (
   </svg>
 );
 
-export default function BrainLink() {
+export default function SkillShare() {
   const navRef = useRef(null);
 
   useEffect(() => {
@@ -193,7 +193,7 @@ export default function BrainLink() {
         <nav className="bl-nav" ref={navRef}>
           <a href="/" className="bl-logo">
             <div className="bl-logo-icon"><Logo /></div>
-            Brain Link
+            Skill Share
           </a>
           <div style={{display:"flex",gap:10,alignItems:"center"}}>
             <a href="/login"    className="bl-ghost">Login</a>
@@ -254,7 +254,7 @@ export default function BrainLink() {
         </section>
 
         <section className="bl-sec" id="features">
-          <span className="bl-lbl">Why Brain Link</span>
+          <span className="bl-lbl">Why Skill Share</span>
           <h2 className="bl-hd">Everything you need to<br/>communicate &amp; grow</h2>
           <p className="bl-st">Built for teams, learners, and creators — all in a simple, focused chat experience.</p>
           <div className="bl-grid">
@@ -285,7 +285,7 @@ export default function BrainLink() {
 
         <section className="bl-sec bl-cta-sec">
           <div className="bl-cta-in">
-            <h2 className="bl-cta-h2">Start your journey with<br/><span className="hl">Brain Link</span> today</h2>
+            <h2 className="bl-cta-h2">Start your journey with<br/><span className="hl">Skill Share</span> today</h2>
             <p className="bl-cta-p">Join thousands of learners and experts already connecting, sharing, and growing together.</p>
             <a href="/Signup" className="bl-btn-main">Join Now — It&apos;s Free <Arrow/></a>
             <div className="bl-cta-avs">
@@ -300,14 +300,14 @@ export default function BrainLink() {
         <footer className="bl-footer">
           <a href="/" className="bl-fl">
             <div className="bl-fl-icon"><Logo size={14}/></div>
-            Brain Link
+            Skill Share
           </a>
           <div className="bl-flinks">
             {[["#features","Features"],["#how-it-works","How it works"],["/login","Login"],["/Signup","Sign Up"],["#","Privacy"],["#","Terms"]].map(([h,l]) =>
               <a key={l} href={h}>{l}</a>
             )}
           </div>
-          <div className="bl-fcopy">© 2026 Brain Link. All rights reserved.</div>
+          <div className="bl-fcopy">© 2026 Skill Share. All rights reserved.</div>
         </footer>
 
       </div>

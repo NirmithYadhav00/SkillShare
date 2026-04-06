@@ -1,12 +1,15 @@
 import { io } from "socket.io-client";
 
-const SOCKET_URL = "http://localhost:5000";
+const SOCKET_URL =
+  import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 export const socket = io(SOCKET_URL, {
   autoConnect: false,
   withCredentials: true,
   transports: ["websocket"],
-  reconnection: false,
+  reconnection: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
 });
 
 let connectionProbe = null;
@@ -14,24 +17,21 @@ let connectionProbe = null;
 const isSocketBusy = () => socket.connected || socket.active;
 
 export const connectSocket = async () => {
-  if (isSocketBusy()) {
-    return true;
-  }
+  if (isSocketBusy()) return true;
 
-  if (connectionProbe) {
-    return connectionProbe;
-  }
+  if (connectionProbe) return connectionProbe;
 
   connectionProbe = fetch(`${SOCKET_URL}/api/health`)
     .then((res) => {
-      if (!res.ok) {
-        throw new Error("Backend unavailable");
-      }
-
+      if (!res.ok) throw new Error();
       socket.connect();
       return true;
     })
-    .catch(() => false)
+    .catch(() => {
+      console.log("Backend waking up...");
+      socket.connect();
+      return true;
+    })
     .finally(() => {
       connectionProbe = null;
     });

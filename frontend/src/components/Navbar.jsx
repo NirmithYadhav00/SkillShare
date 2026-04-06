@@ -148,7 +148,7 @@ function Navbar() {
       </div>
 
       {/* Brand */}
-      <h2 style={{ margin: "0 0 0 20px" }}>BrainLink</h2>
+      <h2 style={{ margin: "0 0 0 20px" }}>Skill Share</h2>
 
     </div>
   );
