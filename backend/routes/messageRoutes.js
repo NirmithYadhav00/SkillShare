@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const protect = require("../middleware/authMiddleware");
 
 const {
   getMessages,
@@ -7,9 +8,9 @@ const {
 } = require("../controllers/messageControllers");
 
 // GET messages by room (your existing logic moved to controller)
-router.get("/:room", getMessages);
+router.get("/:room", protect, getMessages);
 
 // OPTIONAL: send message via API (not required but useful)
-router.post("/", sendMessage);
+router.post("/", protect, sendMessage);
 
 module.exports = router;

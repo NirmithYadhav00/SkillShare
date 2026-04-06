@@ -1,4 +1,5 @@
 const Message = require("../models/Message");
+const Connection = require("../models/connection");
 
 const onlineUsers = new Map();
 const socketHandler = (io) => {
@@ -19,26 +20,50 @@ socket.on("join_room", (room) => {
   console.log("Room:", room);
   console.log("Users in room:", clients ? clients.size : 0);
 });
-
-  socket.on("send_message", async (data) => {
+socket.on("send_message", async (data) => {
   try {
- console.log("Saving room:", data.room);
+    const { sender, receiver, room, text } = data;
 
-const newMessage = new Message({
-  senderId: data.sender,      // ✅ FIX
-  receiverId: data.receiver,  // ✅ FIX
-  room: data.room,
-  text: data.text,
-});    await newMessage.save();
-const clients = io.sockets.adapter.rooms.get(data.room);
-console.log("Room:", data.room);
-console.log("Users in room:", clients ? clients.size : 0);
+    // 🚫 Block empty messages
+    if (!text || !text.trim()) return;
+
+    // 🔍 CHECK CONNECTION
+    const connection = await Connection.findOne({
+      $or: [
+        { sender: sender, receiver: receiver },
+        { sender: receiver, receiver: sender }
+      ]
+    });
+
+    if (!connection || connection.status !== "accepted") {
+      console.log("❌ Not connected - message blocked");
+
+      // 🔥 Send error BACK to sender only
+      socket.emit("message_error", {
+        message: "You can only message connected users"
+      });
+
+      return;
+    }
+
+    // ✅ Save message
+    const newMessage = new Message({
+      senderId: sender,
+      receiverId: receiver,
+      room,
+      text,
+    });
+
+    await newMessage.save();
+
     const formattedMessage = {
       ...newMessage.toObject(),
-      sender: newMessage.sender.id,
+      sender: newMessage.senderId,
+      receiver: newMessage.receiverId,
     };
 
-    io.to(data.room).emit("receive_message", formattedMessage);
+    // 📡 Send to room
+    io.to(room).emit("receive_message", formattedMessage);
 
   } catch (err) {
     console.error(err);

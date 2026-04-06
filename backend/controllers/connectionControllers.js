@@ -108,12 +108,12 @@ const handleReject = async () => {
     await axios.put(
       `http://localhost:5000/api/connections/reject/${connectionId}`,
       {},
+      
       {
         headers: { Authorization: `Bearer ${token}` },
       }
     );
-
-    setConnectionStatus("none"); // reset UI
+    await fetchStatus(); 
   } catch (err) {
     console.log(err);
   }
