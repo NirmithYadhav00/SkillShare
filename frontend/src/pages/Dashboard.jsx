@@ -209,8 +209,9 @@ const filteredUsers = users
 
                 {/* Action buttons */}
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button className="btn-msg"     onClick={() => navigate(`/chat/${user._id}`)}>💬 Message</button>
-                  <button className="btn-outline" onClick={() => navigate(`/profile/${user._id}`)}>Profile</button>
+{status === "accepted" && (
+  <button>💬 Message</button>
+)}                  <button className="btn-outline" onClick={() => navigate(`/profile/${user._id}`)}>Profile</button>
                 </div>
 
               </div>
