@@ -6,12 +6,8 @@ const SOCKET_URL =
 export const socket = io(SOCKET_URL, {
   autoConnect: false,
   withCredentials: true,
-  transports: ["websocket"],
-  reconnection: true,
-  reconnectionAttempts: 5,
-  reconnectionDelay: 1000,
+  transports: ["polling", "websocket"],
 });
-
 let connectionProbe = null;
 
 const isSocketBusy = () => socket.connected || socket.active;
