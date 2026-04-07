@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
+import { API_BASE_URL, BACKEND_URL } from "../config/api";
 
-const SOCKET_URL =
-  import.meta.env.VITE_BACKEND_URL || "https://skillshare-ebe1.onrender.com";
+const SOCKET_URL = BACKEND_URL;
 
 export const socket = io(SOCKET_URL, {
   autoConnect: false,
@@ -17,7 +17,7 @@ export const connectSocket = async () => {
 
   if (connectionProbe) return connectionProbe;
 
-  connectionProbe = fetch(`${SOCKET_URL}/api/health`)
+  connectionProbe = fetch(`${API_BASE_URL}/health`)
     .then((res) => {
       if (!res.ok) throw new Error();
       socket.connect();

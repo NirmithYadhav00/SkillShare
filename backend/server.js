@@ -18,11 +18,12 @@ const server = http.createServer(app);
 
 const PORT = process.env.PORT || 5000;
 
-const CLIENT_URL = process.env.CLIENT_URL;
+const CLIENT_URL =
+  process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:5173";
 console.log("CLIENT_URL:", CLIENT_URL);
 
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: CLIENT_URL,
   credentials: true
 }));
 

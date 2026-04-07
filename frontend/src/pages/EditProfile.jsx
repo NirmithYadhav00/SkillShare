@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { apiUrl } from "../config/api";
 
 function EditProfile() {
   const { id } = useParams();
@@ -23,7 +24,7 @@ function EditProfile() {
 
       try {
         const res = await axios.get(
-          `https://skillshare-ebe1.onrender.com/api/users/profile/${id}`
+          apiUrl(`/users/profile/${id}`)
         );
 
         setSkillsOffered(res.data.skillsOffered?.join(", ") || "");
@@ -52,7 +53,7 @@ function EditProfile() {
       }
 
       await axios.put(
-        `https://skillshare-ebe1.onrender.com/api/users/profile/${id}`,
+        apiUrl(`/users/profile/${id}`),
         {
           skillsOffered: skillsOffered
             .split(",")

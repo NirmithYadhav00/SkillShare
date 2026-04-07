@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { apiUrl } from "../config/api";
 
 // ─── COLORS (Brain Link Light Theme) ─────────────────────────────────────────
 const C = {
@@ -43,7 +44,7 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("https://skillshare-ebe1.onrender.comapi/auth/login", {
+      const res = await fetch(apiUrl("/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

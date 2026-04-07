@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { apiUrl } from "../config/api";
 
 function Profile() {
   const { id } = useParams();
@@ -24,7 +25,7 @@ const [connectionId, setConnectionId] = useState(null);
 
     try {
       await axios.post(
-        `https://skillshare-ebe1.onrender.com/api/connections/send/${id}`,
+        apiUrl(`/connections/send/${id}`),
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -45,7 +46,7 @@ const handleAccept = async () => {
     const token = localStorage.getItem("token");
 
     await axios.put(
-      `https://skillshare-ebe1.onrender.com/api/connections/accept/${connectionId}`,
+      apiUrl(`/connections/accept/${connectionId}`),
       {},
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -64,7 +65,7 @@ const handleReject = async () => {
     const token = localStorage.getItem("token");
 
     await axios.put(
-      `https://skillshare-ebe1.onrender.com/api/connections/reject/${connectionId}`,
+      apiUrl(`/connections/reject/${connectionId}`),
       {},
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -73,7 +74,7 @@ const handleReject = async () => {
 
     // 🔥 IMPORTANT: reload fresh data
     const connRes = await axios.get(
-      `https://skillshare-ebe1.onrender.com/api/connections/status/${id}`,
+      apiUrl(`/connections/status/${id}`),
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -92,14 +93,14 @@ const handleReject = async () => {
     const loadData = async () => {
       try {
         const userRes = await axios.get(
-          `https://skillshare-ebe1.onrender.com/api/users/profile/${id}`
+          apiUrl(`/users/profile/${id}`)
         );
         setUser(userRes.data);
 
         const token = localStorage.getItem("token");
 
         const connRes = await axios.get(
-          `https://skillshare-ebe1.onrender.com/api/connections/status/${id}`,
+          apiUrl(`/connections/status/${id}`),
           {
             headers: { Authorization: `Bearer ${token}` },
           }

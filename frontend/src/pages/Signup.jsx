@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import { apiUrl } from "../config/api";
 
 // â”€â”€â”€ COLORS (Brain Link Light Theme) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const C = {
@@ -48,7 +49,7 @@ function Signup() {
 
     try {
       const res = await axios.post(
-        "https://skillshare-ebe1.onrender.com/api/auth/register",
+        apiUrl("/auth/register"),
         { username, name, email, password }
       );
 

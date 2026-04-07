@@ -3,6 +3,7 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
 import { connectSocket, socket } from "./socket";
+import { apiUrl } from "../config/api";
 
 // ─── COLORS (Brain Link Light Theme) ─────────────────────────────────────────
 const C = {
@@ -82,7 +83,7 @@ function Dashboard() {
 
   const fetchUsers = async () => {
   try {
-    const res = await axios.get("https://skillshare-ebe1.onrender.com/api/users");
+    const res = await axios.get(apiUrl("/users"));
 
     setUsers(res.data);
   } catch (error) {

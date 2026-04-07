@@ -1,4 +1,5 @@
 const Connection = require("../models/connection");
+const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:5000/api";
 
 const sendRequest = async (req, res) => {
   try {
@@ -106,7 +107,7 @@ const handleReject = async () => {
     const token = localStorage.getItem("token");
 
     await axios.put(
-      `https://skillshare-ebe1.onrender.com/api/connections/reject/${connectionId}`,
+      `${API_BASE_URL}/connections/reject/${connectionId}`,
       {},
       
       {

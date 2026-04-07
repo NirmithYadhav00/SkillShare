@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import Navbar from "../components/Navbar";
 import { useParams } from "react-router-dom";
 import { connectSocket, socket } from "./socket";
+import { apiUrl } from "../config/api";
 
 // Colors
 const C = {
@@ -127,7 +128,7 @@ function Chat() {
 
       try {
         const res = await fetch(
-          `https://skillshare-ebe1.onrender.com/api/connections/status/${id}`,
+          apiUrl(`/connections/status/${id}`),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -188,7 +189,7 @@ useEffect(() => {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `https://skillshare-ebe1.onrender.com/api/messages/${room}`,
+        apiUrl(`/messages/${room}`),
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -218,7 +219,7 @@ useEffect(() => {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `https://skillshare-ebe1.onrender.com/api/messages/${room}`,
+        apiUrl(`/messages/${room}`),
         {
           headers: {
             Authorization: `Bearer ${token}`,
