@@ -19,7 +19,7 @@ const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
 const CLIENT_URL =
-  process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:5173";
+  process.env.FRONTEND_URL || process.env.CLIENT_URL || "https://skill-share-steel.vercel.app/";
 console.log("CLIENT_URL:", CLIENT_URL);
 
 app.use(cors({
