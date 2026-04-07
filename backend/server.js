@@ -18,9 +18,8 @@ const server = http.createServer(app);
 
 const PORT = process.env.PORT || 5000;
 
-const CLIENT_URL = process.env.CLIENT_URL || "https://skillshare-ebe1.onrender.com";
-
-app.set("trust proxy", 1);
+const CLIENT_URL = process.env.CLIENT_URL;
+console.log("CLIENT_URL:", CLIENT_URL);
 
 app.use(cors({
   origin: process.env.CLIENT_URL,
