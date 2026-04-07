@@ -23,7 +23,7 @@ const CLIENT_URL = process.env.CLIENT_URL || "https://skillshare-ebe1.onrender.c
 app.set("trust proxy", 1);
 
 app.use(cors({
-  origin: CLIENT_URL,
+  origin: process.env.CLIENT_URL,
   credentials: true
 }));
 
