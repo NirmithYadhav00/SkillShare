@@ -50,10 +50,14 @@ function Login() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
+      console.log("LOGIN RESPONSE:", data);
       const userId = data.user?._id || data._id || data.userId;
       if (!userId) { console.log("❌ userId not found"); return; }
       localStorage.setItem("userId", userId);
       localStorage.setItem("token", data.token);
+const userData = data.user || data;
+
+localStorage.setItem("user", JSON.stringify(userData));
       navigate("/dashboard");
     } catch (err) {
       console.error("Login error:", err);

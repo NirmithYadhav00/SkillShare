@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
 import { connectSocket, socket } from "./socket";
 import { apiUrl } from "../config/api";
+import Sidebar from "../components/sidebar";
 
 // ─── COLORS (Brain Link Light Theme) ─────────────────────────────────────────
 const C = {
@@ -231,6 +232,16 @@ const filteredUsers = users
       </div>
     </div>
   );
+function Dashboard() {
+  return (
+    <div style={{ display: "flex" }}>
+      <Sidebar />
+      <div style={{ marginLeft: "72px", flex: 1 }}>
+        {/* your page content */}
+      </div>
+    </div>
+  );
+}
 }
 
 export default Dashboard;
