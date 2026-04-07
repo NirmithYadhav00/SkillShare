@@ -18,20 +18,28 @@ const server = http.createServer(app);
 
 const PORT = process.env.PORT || 5000;
 
-const allowedOrigins = (
-  process.env.FRONTEND_URL ||
-  process.env.CLIENT_URL ||
-  "http://localhost:5173"
-)
-  .split(",")
-  .map((origin) => origin.trim().replace(/\/+$/, ""))
-  .filter(Boolean);
+const normalizeOrigin = (value = "") =>
+  value
+    .trim()
+    .replace(/^[A-Z_]+=/i, "")
+    .replace(/\/+$/, "");
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.CLIENT_URL,
+  "https://skill-share-steel.vercel.app",
+  "http://localhost:5173",
+]
+  .flatMap((value) => (value ? value.split(",") : []))
+  .map(normalizeOrigin)
+  .filter(Boolean)
+  .filter((origin, index, arr) => arr.indexOf(origin) === index);
 
 console.log("Allowed origins:", allowedOrigins);
 
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin.replace(/\/+$/, ""))) {
+    if (!origin || allowedOrigins.includes(normalizeOrigin(origin))) {
       return callback(null, true);
     }
 
